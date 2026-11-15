@@ -36,7 +36,13 @@ import com.arjunvision.tvlauncher.ui.theme.LauncherColors
  * every later OK on AIRTEL DTH switches straight to it.
  */
 @Composable
-fun SetTopBoxPicker(choices: List<HdmiInput>, onPick: (HdmiInput) -> Unit, onDismiss: () -> Unit) {
+fun SetTopBoxPicker(
+    choices: List<HdmiInput>,
+    onPick: (HdmiInput) -> Unit,
+    onDismiss: () -> Unit,
+    title: String = "Which HDMI is the Airtel box on?",
+    subtitle: String = "Asked only once. AIRTEL DTH will open this input directly from now on.",
+) {
     val first = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
     BackHandler(onBack = onDismiss)
@@ -46,9 +52,9 @@ fun SetTopBoxPicker(choices: List<HdmiInput>, onPick: (HdmiInput) -> Unit, onDis
             Modifier.clip(RoundedCornerShape(28.dp)).background(LauncherColors.Surface).padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Which HDMI is the Airtel box on?", color = LauncherColors.TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Text(title, color = LauncherColors.TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(6.dp))
-            Text("Asked only once. AIRTEL DTH will open this input directly from now on.", color = LauncherColors.TextSecondary, fontSize = 16.sp)
+            Text(subtitle, color = LauncherColors.TextSecondary, fontSize = 16.sp)
             Spacer(Modifier.height(24.dp))
             if (choices.isEmpty()) {
                 Text("The TV reports no free HDMI inputs. Check the cable, then try again.", color = Color(0xFFF59E0B), fontSize = 16.sp)

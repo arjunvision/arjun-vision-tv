@@ -3,6 +3,21 @@
 Device: MiTV-MOOR2 (`venom`), Android 11 / API 30, build 2674, 1920×1080. Tests are driven over network ADB with the remote's key codes (`input keyevent`) and checked with `uiautomator dump`, `screencap`, `logcat`, `dumpsys`.
 Marks: **PASS** = run and seen to work · **FAIL** · **NOT VERIFIED** = not run on the real TV.
 
+## Phase 4 – Smart HDMI Hub + full regression (2026-11-15, release build)
+| Check | Result | Evidence |
+|---|---|---|
+| Hub: Airtel DTH and PS5 cards with own identity, live state, CEC info | PASS | Screenshot: "HDMI 2 · Connected", "PlayStation 5 · Connected · HDMI-CEC: can wake the console" |
+| Hub: TV input list (type, state, CEC name, used-by) | PASS | uiautomator text |
+| Hub: switching method line | PASS | "Switching through the TV's own input app (com.mitv.livetv)" |
+| Route used on this TV | PASS (recorded) | 1 Xiaomi tvplayer: not installed → skipped · 2 TV Input Framework passthrough URI → `com.mitv.livetv`: works · 3 manual steps: shown |
+| Hub: PS5 Test switch | PASS | `START … HDMI100004 from uid 10092`, message "Switching requested … check your TV" (no false success) |
+| Hub: Change input picker; Back closes it; focus returns to Change input | PASS | uiautomator + key test |
+| Hub opens from Settings (Father) and from My Mode tile | PASS | regression |
+| Custom input names | NOT VERIFIED | none set on this TV |
+| **Scripted regression, 26 checks** (both profiles, Airtel/PS5 switching, YouTube/Netflix/Hotstar, Entertainment, Theme Studio, Hub, App library + MENU, Settings, profile switches, Back everywhere) | **26/26 PASS** | 25/26 in the run; the Hotstar miss was the script pressing too fast right after returning from Netflix; Hotstar retested alone: focus Airtel→YouTube→Netflix→Hotstar, OK → `in.startv.hotstar` |
+| Reactor graphic / red fill removed (Sri's redesign brief) | PASS | Screenshot after removal; no `ARC_REACTOR` references remain |
+| Unit tests | PASS | 13/13 |
+
 ## Phase 3 – Home + design system, Airtel direct HDMI (2026-11-15, release build)
 | Check | Result | Evidence |
 |---|---|---|

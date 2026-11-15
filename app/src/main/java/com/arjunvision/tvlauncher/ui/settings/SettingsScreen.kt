@@ -90,6 +90,11 @@ fun SettingsScreen(state: LauncherUiState, viewModel: LauncherViewModel) {
             onSelect = { viewModel.updateSettings { it.copy(startupAnimation = !it.startupAnimation) } },
         ),
         SettingRow(
+            title = "Smart HDMI Hub (Airtel DTH, PlayStation 5, test switch)",
+            value = "Open",
+            onSelect = { viewModel.show(com.arjunvision.tvlauncher.ui.Screen.HdmiHub) },
+        ),
+        SettingRow(
             title = "Airtel DTH HDMI input (Father's TV)",
             value = state.hdmiLabel(settings.cableInputId) ?: "Not set",
             onSelect = {

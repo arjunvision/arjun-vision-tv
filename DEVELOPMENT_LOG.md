@@ -29,3 +29,11 @@
 - Performance: atrace showed the Home screen GPU-bound (~6 full-screen fills per frame). New `CinematicBackdrop` bakes wallpaper + scrim + aurora into one opaque 960×540 image off the main thread; transparent theme Surface; window background dropped after first frame; glass highlight now moves as a cached layer. Frame median 57 → 32 ms; GPU 45-53 → 17.6 ms.
 - Reference: pengchujin/aerial-tv (MIT) studied read-only: CEC-child-first switching, resolve check, hidden inputs. No code copied.
 - Changed files: `domain/models/{Models,HdmiDetection}.kt`, `platform/hdmi/HdmiInputRepository.kt`, `ui/LauncherViewModel.kt`, `ui/LauncherRoot.kt`, `ui/home/{HomeScreen,SetTopBoxPicker}.kt`, `ui/entertainment/EntertainmentScreen.kt`, `ui/components/{FocusCard,GlassDock,CinematicBackdrop,AmbientLayers}.kt`, `ui/theme/Theme.kt`, `ui/settings/SettingsScreen.kt`, `ui/gaming/PlayStationScreen.kt`, `ui/themes/ThemeStudioScreen.kt`, `ui/screensaver/ScreensaverScreen.kt`, `MainActivity.kt`, tests `HdmiDetectionTest.kt`.
+
+## Phase 4 – Smart HDMI Hub (2026-11-15)
+- `ui/hdmi/HdmiHubScreen.kt`: AIRTEL DTH / PLAYSTATION 5 cards (live input, state, CEC info, Watch/Play, Test switch, Change input), TV input list (type, state, CEC and custom names, used-by), switching-method line, manual steps with real port names. Header pinned; focus returns to Change input after the picker.
+- `HdmiInput.customLabel/typeLabel`, `HdmiDetection.deviceNameFor`, `HdmiInputRepository.inputAppFor` (documents route order), ViewModel `HubDevice`, `testSwitch` (honest "Switching requested — check your TV"), `pickHubInput`.
+- Entry: Settings → Smart HDMI Hub; My Mode tile HDMI HUB.
+- Iron Man request: an original "Arc Reactor" theme was built, then **removed** when Sri's redesign brief rejected the reactor graphic and red fill. Saved theme falls back to Arjun Vision Classic.
+- Regression script (`regression.py`, 26 key-driven checks on the TV): 26/26 (see TESTING_REPORT).
+- Debug APK copied to `~/Desktop/ArjunVision-debug.apk`.

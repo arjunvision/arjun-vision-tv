@@ -34,6 +34,8 @@ class HdmiInputRepository(private val context: Context) {
                     portNumber = null,
                     connection = stateOf(manager, info.id),
                     parentId = info.parentId,
+                    customLabel = runCatching { info.loadCustomLabel(context)?.toString() }.getOrNull()?.ifBlank { null },
+                    typeLabel = typeLabelOf(info.type),
                 )
             }
     }
@@ -68,6 +70,27 @@ class HdmiInputRepository(private val context: Context) {
         } catch (e: SecurityException) {
             false
         }
+    }
+
+    /**
+     * Which app would handle switching to [inputId], for the Hub's diagnostics. Null if none.
+     * Route order on this TV: (1) Xiaomi `com.xiaomi.mitv.tvplayer` – not installed on the
+     * MiTV-MOOR2, so skipped; (2) standard TV Input Framework passthrough URI → `com.mitv.livetv`;
+     * (3) manual steps with the original remote.
+     */
+    fun inputAppFor(inputId: String): String? {
+        val intent = Intent(Intent.ACTION_VIEW, TvContract.buildChannelUriForPassthroughInput(inputId))
+        @Suppress("DEPRECATION")
+        val pkg = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName
+        return pkg?.takeIf { isTvInputApp(it) }
+    }
+
+    private fun typeLabelOf(type: Int): String = when (type) {
+        TvInputInfo.TYPE_HDMI -> "HDMI"
+        TvInputInfo.TYPE_DISPLAY_PORT -> "DisplayPort"
+        TvInputInfo.TYPE_DVI -> "DVI"
+        TvInputInfo.TYPE_TUNER -> "Tuner"
+        else -> "Other"
     }
 
     private fun isTvInputApp(pkg: String): Boolean =

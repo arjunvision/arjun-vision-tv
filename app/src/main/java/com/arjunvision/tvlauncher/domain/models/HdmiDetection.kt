@@ -32,4 +32,9 @@ object HdmiDetection {
         return inputs.filter { it.parentId == null && it.inputId != ps5Port }
             .sortedBy { if (it.connection == InputConnection.CONNECTED) 0 else 1 }
     }
+
+    /** The CEC device name shown for [input]: its own label if it is a CEC child, else its child's label. */
+    fun deviceNameFor(input: HdmiInput, inputs: List<HdmiInput>): String? =
+        if (input.parentId != null) input.label
+        else inputs.firstOrNull { it.parentId == input.inputId }?.label
 }

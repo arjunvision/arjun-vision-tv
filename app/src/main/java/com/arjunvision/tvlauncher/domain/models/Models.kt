@@ -55,6 +55,10 @@ data class HdmiInput(
     val connection: InputConnection = InputConnection.UNKNOWN,
     /** Set for an HDMI-CEC device input (e.g. "PlayStation 5"); points at its physical port input. */
     val parentId: String? = null,
+    /** Name the user gave this input in the TV's own settings (TvInputInfo.loadCustomLabel), if any. */
+    val customLabel: String? = null,
+    /** "HDMI", "DisplayPort", "Other"… from TvInputInfo.getType(). */
+    val typeLabel: String = "HDMI",
 )
 
 /** From TvInputManager.getInputState(). */

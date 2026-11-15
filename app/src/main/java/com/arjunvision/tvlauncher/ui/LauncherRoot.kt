@@ -16,6 +16,7 @@ import com.arjunvision.tvlauncher.ui.apps.AppsScreen
 import com.arjunvision.tvlauncher.ui.entertainment.EntertainmentScreen
 import com.arjunvision.tvlauncher.ui.gaming.PlayStationScreen
 import com.arjunvision.tvlauncher.ui.home.HomeScreen
+import com.arjunvision.tvlauncher.ui.hdmi.HdmiHubScreen
 import com.arjunvision.tvlauncher.ui.home.SetTopBoxPicker
 import com.arjunvision.tvlauncher.domain.models.HdmiDetection
 import androidx.compose.foundation.layout.Box
@@ -32,6 +33,7 @@ fun LauncherRoot(viewModel: LauncherViewModel) {
     val themeState by viewModel.themeState.collectAsStateWithLifecycle()
     val preview by viewModel.previewTheme.collectAsStateWithLifecycle()
     val showSetTopBoxPicker by viewModel.setTopBoxPicker.collectAsStateWithLifecycle()
+    val hubPicker by viewModel.hubPicker.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     // Live theming: the preview (if any) or the active theme repaints every screen.
@@ -62,10 +64,21 @@ fun LauncherRoot(viewModel: LauncherViewModel) {
             Screen.Settings -> SettingsScreen(state = state, viewModel = viewModel)
             Screen.PlayStation -> PlayStationScreen(state = state, viewModel = viewModel)
             Screen.ThemeStudio -> ThemeStudioScreen(state = state, viewModel = viewModel)
+            Screen.HdmiHub -> HdmiHubScreen(state = state, viewModel = viewModel)
             is Screen.Entertainment -> EntertainmentScreen(state = state, viewModel = viewModel, gamingFirst = screen.gaming)
             Screen.ThemePreview -> HomeScreen(state = state, viewModel = viewModel, preview = preview)
             Screen.Screensaver -> ScreensaverScreen(state = state)
         }
+    }
+    hubPicker?.let { device ->
+        SetTopBoxPicker(
+            choices = if (device == HubDevice.AIRTEL) HdmiDetection.setTopBoxChoices(state.hdmiInputs, state.settings.playStationInputId)
+            else state.hdmiInputs,
+            onPick = { viewModel.pickHubInput(device, it) },
+            onDismiss = viewModel::dismissHubPicker,
+            title = "Which input is ${device.title} on?",
+            subtitle = "Saved on this TV. You can change it again here any time.",
+        )
     }
     if (showSetTopBoxPicker) {
         SetTopBoxPicker(

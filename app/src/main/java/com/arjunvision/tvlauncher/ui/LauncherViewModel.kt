@@ -38,6 +38,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+/** The two HDMI devices the Smart HDMI Hub manages. */
+enum class HubDevice(val title: String, val subtitle: String) {
+    AIRTEL("AIRTEL DTH", "Father's TV"),
+    PS5("PLAYSTATION 5", "My Gaming"),
+}
+
 sealed interface Screen {
     data object Startup : Screen
     data object Home : Screen
@@ -46,6 +52,7 @@ sealed interface Screen {
     data object Settings : Screen
     data object PlayStation : Screen
     data object ThemeStudio : Screen
+    data object HdmiHub : Screen
     /** Entertainment Centre; [gaming] = opened from the Gaming Centre tile (focus starts on gaming). */
     data class Entertainment(val gaming: Boolean = false) : Screen
     data object ThemePreview : Screen
@@ -301,6 +308,58 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             return
         }
         switchInput(target, "PlayStation 5")
+    }
+
+    // ---- Smart HDMI Hub ----
+
+    private val _hubPicker = MutableStateFlow<HubDevice?>(null)
+    /** Device whose input is being changed in the Hub (shows the input picker), or null. */
+    val hubPicker: StateFlow<HubDevice?> = _hubPicker.asStateFlow()
+
+    /** The input the device will use: saved mapping, else what detection finds (not saved here). */
+    fun hubInputFor(device: HubDevice, state: LauncherUiState = uiState.value): HdmiInput? {
+        val inputs = state.hdmiInputs
+        return when (device) {
+            HubDevice.AIRTEL -> state.hdmiInput(state.settings.cableInputId)
+                ?: HdmiDetection.detectSetTopBox(inputs, state.settings.playStationInputId)
+            HubDevice.PS5 -> state.hdmiInput(state.settings.playStationInputId)
+                ?: HdmiDetection.detectPlayStation(inputs)
+        }
+    }
+
+    /** Which app would carry out the switch (diagnostics), e.g. "com.mitv.livetv". */
+    fun inputAppFor(inputId: String): String? = hdmiRepository.inputAppFor(inputId)
+
+    /** Same switch as the Home tile, but reports what happened. The app cannot see the picture. */
+    fun testSwitch(device: HubDevice) {
+        val input = hubInputFor(device)
+        if (input == null) {
+            _messages.tryEmit("No input found for ${device.title}. Use Change input.")
+            return
+        }
+        if (hdmiRepository.openPassthroughInput(input.inputId)) {
+            _messages.tryEmit("Switching requested to ${input.label} — check your TV.")
+        } else {
+            _messages.tryEmit("The TV did not accept the request. Press INPUT on the Xiaomi remote and choose ${input.label}.")
+        }
+    }
+
+    fun changeHubInput(device: HubDevice) {
+        _hubPicker.value = device
+    }
+
+    fun dismissHubPicker() {
+        _hubPicker.value = null
+    }
+
+    /** Saves the chosen input for [device]. Persisted in DataStore (keys kept from v1). */
+    fun pickHubInput(device: HubDevice, input: HdmiInput) {
+        when (device) {
+            HubDevice.AIRTEL -> updateSettings { it.copy(cableInputId = input.inputId) }
+            HubDevice.PS5 -> updateSettings { it.copy(playStationInputId = input.inputId) }
+        }
+        _hubPicker.value = null
+        _messages.tryEmit("${device.title} will use ${input.label}.")
     }
 
     /** No success message: the app cannot see the picture. On failure, give the manual remote steps. */

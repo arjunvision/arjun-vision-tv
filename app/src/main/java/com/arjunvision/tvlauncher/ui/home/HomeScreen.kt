@@ -253,6 +253,9 @@ private fun buildDockTiles(state: LauncherUiState, viewModel: LauncherViewModel,
                 viewModel.show(Screen.ThemeStudio)
             },
             airtel,
+            DockTile("hdmi-hub", "HDMI HUB", "Smart HDMI Hub", "Airtel DTH · PS5 · test switch", "HUB", null, Color(0xFF14B8A6)) {
+                viewModel.show(Screen.HdmiHub)
+            },
             DockTile("apps", "APPS", "App Library", "${state.visibleApps.size} apps · hold OK to edit", "APP", null, LauncherColors.Blue) {
                 viewModel.show(Screen.Apps)
             },

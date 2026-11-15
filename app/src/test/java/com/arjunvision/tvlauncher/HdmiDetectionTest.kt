@@ -38,4 +38,12 @@ class HdmiDetectionTest {
         val ids = HdmiDetection.setTopBoxChoices(moor2, null).map { it.inputId }
         assertEquals(listOf(base + "HW5", base + "HW6"), ids)
     }
+
+    @Test fun cecNameShownOnPortAndChild() {
+        val port = moor2.first { it.inputId.endsWith("HW4") }
+        val child = moor2.first { it.inputId.endsWith("HDMI100004") }
+        assertEquals("PlayStation 5", HdmiDetection.deviceNameFor(port, moor2))
+        assertEquals("PlayStation 5", HdmiDetection.deviceNameFor(child, moor2))
+        assertNull(HdmiDetection.deviceNameFor(moor2.first { it.inputId.endsWith("HW5") }, moor2))
+    }
 }
