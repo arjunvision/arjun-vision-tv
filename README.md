@@ -70,9 +70,16 @@ On the TV you can also open it from the Apps row: **ARJUN VISION TV**.
 - Automatic: daily check; monthly discovery; festival themes switch on their dates; 7-day preview before a festival; Apply locks a theme until you unlock it.
 - Offline: keeps the current theme and cached wallpapers, and retries discovery when internet returns.
 
-## Returning to the original Xiaomi launcher
+## Rollback and launcher recovery
 
-Nothing on the TV was disabled or changed. The Xiaomi home stays the default. To switch Home apps, use Settings → **Default home app** (opens Android's own chooser). On this firmware Google's `setupwraith` also answers HOME, so the choice may not stick; see ROADMAP.md before changing anything.
+- **The TV's own home is untouched.** On this TV that's Google TV's launcher (`com.google.android.apps.tv.launcherx`), and it stays the default. ARJUN VISION TV opens from the Apps row; the Home key returns to Google TV home.
+- **If Google TV home ever goes missing** (for example after an experiment), run `./tools/restore-google-tv-home.sh`. It re-enables `launcherx` and `setupwraith` and sets Google TV home back. This was tested on 2026-11-15.
+- **Go back to the pre-v2 app:** install `~/Desktop/ArjunVision-backup/arjunvision-0.2.0-vc2-installed.apk`:
+  ```bash
+  ~/Library/Android/sdk/platform-tools/adb -s 192.168.29.64:5555 install -r -d ~/Desktop/ArjunVision-backup/arjunvision-0.2.0-vc2-installed.apk
+  ```
+- **Go back to the pre-v2 code:** `git checkout pre-v2-baseline` (read-only look) or `git switch main`.
+- **Clear launcher defaults** (only if ARJUN VISION was ever chosen as Home): TV Settings → Apps → ARJUN VISION TV → Clear defaults. Or uninstall the app (below).
 
 ## Uninstall
 

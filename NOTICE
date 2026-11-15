@@ -1,0 +1,23 @@
+ARJUN VISION TV
+Copyright (c) 2026 Arjun Vision Tech Solutions
+
+Third-party source code reused in this project
+----------------------------------------------
+None so far.
+
+Reference projects studied for ideas only (no code, artwork or fonts copied):
+- Gathin23/cleanyourtv (MIT License, Copyright (c) 2026 Gathin)
+- udhaykumarbala/cleanyourtv-app (MIT License)
+- pengchujin/aerial-tv (MIT License) – study in progress
+
+If MIT or Apache-2.0 code is reused later, its full copyright and licence notice is added
+here and the file is named in DEVELOPMENT_LOG.md.
+
+Libraries (via Gradle, under their own licences, Apache-2.0):
+AndroidX (Compose, Activity, Lifecycle, DataStore, WorkManager, Core), Kotlin, kotlinx.coroutines.
+
+Runtime images
+--------------
+Theme wallpapers are downloaded at runtime from the Wikimedia Commons API (CC0, public domain,
+CC BY, CC BY-SA only). Each image's creator, source and licence are stored with it and shown on
+screen. No third-party images ship inside the APK.
