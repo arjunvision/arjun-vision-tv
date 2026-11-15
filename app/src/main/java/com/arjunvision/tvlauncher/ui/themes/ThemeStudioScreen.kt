@@ -52,7 +52,7 @@ import com.arjunvision.tvlauncher.platform.network.NetworkState
 import com.arjunvision.tvlauncher.platform.network.networkStateFlow
 import com.arjunvision.tvlauncher.ui.LauncherUiState
 import com.arjunvision.tvlauncher.ui.LauncherViewModel
-import com.arjunvision.tvlauncher.ui.components.AuroraBackground
+import com.arjunvision.tvlauncher.ui.components.CinematicBackdrop
 import com.arjunvision.tvlauncher.ui.components.FocusCard
 import com.arjunvision.tvlauncher.ui.components.decodeSampled
 import com.arjunvision.tvlauncher.ui.theme.LauncherColors
@@ -93,8 +93,8 @@ fun ThemeStudioScreen(state: LauncherUiState, viewModel: LauncherViewModel) {
             .forEach { g -> add(Section(g.title, all.filter { it.category.group == g && !it.generated })) }
     }.filter { it.themes.isNotEmpty() }
 
-    Box(modifier = Modifier.fillMaxSize().background(LauncherColors.Background)) {
-        AuroraBackground(animate = motion > 0f)
+    Box(modifier = Modifier.fillMaxSize()) {
+        CinematicBackdrop(wallpaperPath = null, animate = motion > 0f)
         LazyColumn(
             contentPadding = PaddingValues(horizontal = 48.dp, vertical = 28.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),

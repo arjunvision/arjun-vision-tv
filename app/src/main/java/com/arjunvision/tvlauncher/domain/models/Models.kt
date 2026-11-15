@@ -53,6 +53,8 @@ data class HdmiInput(
     val label: String,
     val portNumber: Int?,
     val connection: InputConnection = InputConnection.UNKNOWN,
+    /** Set for an HDMI-CEC device input (e.g. "PlayStation 5"); points at its physical port input. */
+    val parentId: String? = null,
 )
 
 /** From TvInputManager.getInputState(). */
@@ -68,4 +70,8 @@ enum class KnownEntertainmentApp(val title: String, val packages: Set<String>) {
     YOUTUBE("YouTube", setOf("com.google.android.youtube.tv", "com.google.android.youtube")),
     NETFLIX("Netflix", setOf("com.netflix.ninja")),
     HOTSTAR("Disney+ Hotstar", setOf("in.startv.hotstar")),
+    ;
+
+    /** The Android TV package to open in the Play Store when the app is not installed (verified on the TV). */
+    val storePackage: String get() = packages.first()
 }

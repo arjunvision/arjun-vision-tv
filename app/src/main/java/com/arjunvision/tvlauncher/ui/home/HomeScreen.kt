@@ -49,13 +49,12 @@ import com.arjunvision.tvlauncher.ui.LauncherUiState
 import com.arjunvision.tvlauncher.ui.LauncherViewModel
 import com.arjunvision.tvlauncher.ui.Screen
 import com.arjunvision.tvlauncher.ui.components.AppIcon
-import com.arjunvision.tvlauncher.ui.components.AuroraBackground
+import com.arjunvision.tvlauncher.ui.components.CinematicBackdrop
 import com.arjunvision.tvlauncher.ui.components.FocusCard
 import com.arjunvision.tvlauncher.ui.components.GlassDock
 import com.arjunvision.tvlauncher.ui.components.GlassHighlightState
 import com.arjunvision.tvlauncher.ui.components.LogoMark
 import com.arjunvision.tvlauncher.ui.components.ParticleLayer
-import com.arjunvision.tvlauncher.ui.components.ThemeWallpaper
 import com.arjunvision.tvlauncher.ui.components.rememberAppVisual
 import com.arjunvision.tvlauncher.ui.components.timeOfDayGreeting
 import com.arjunvision.tvlauncher.ui.theme.LauncherColors
@@ -74,6 +73,8 @@ private data class DockTile(
     val glyph: String,
     val packageName: String?,
     val accent: Color,
+    /** 1.25 for the featured tile of each profile (Airtel DTH / PlayStation 5). */
+    val widthScale: Float = 1f,
     val onClick: () -> Unit,
 )
 
@@ -85,76 +86,50 @@ private data class DockTile(
 fun HomeScreen(state: LauncherUiState, viewModel: LauncherViewModel, preview: ThemeSpec? = null) {
     val settings = state.settings
     val isFather = settings.profile == Profile.FATHER
-    val motion = if (settings.liteMode) 0f else settings.animation.factor
-    val tileWidth: Dp = if (isFather) maxOf(settings.cardSize.widthDp, 250).dp else settings.cardSize.widthDp.dp
+    // Father Mode: calmer by default (half zoom, still aurora, no particles) and extra-large tiles.
+    val baseMotion = if (settings.liteMode) 0f else settings.animation.factor
+    val motion = if (isFather) minOf(baseMotion, 0.5f) else baseMotion
+    val ambientMotion = !isFather && motion > 0f
+    val tileWidth: Dp = if (isFather) maxOf(settings.cardSize.widthDp, 270).dp else settings.cardSize.widthDp.dp
     val firstTile = remember { FocusRequester() }
     val highlight = remember { GlassHighlightState() }
-    var focusedTitle by remember { mutableStateOf<String?>(null) }
-    var focusedSubtitle by remember { mutableStateOf<String?>(null) }
-    val ambient by animateColorAsState(
-        targetValue = highlight.accent ?: LauncherColors.Blue,
-        animationSpec = tween(durationMillis = if (motion == 0f) 0 else 360),
-        label = "ambientGlow",
-    )
+    // Focus-driven state is read only by the small composables that show it (TopShelf, AmbientAurora),
+    // so a D-pad move no longer rebuilds the whole Home screen (measured 57 ms frames before).
+    val shelf = remember { ShelfState() }
 
     val tiles = buildDockTiles(state, viewModel, isFather)
 
     LaunchedEffect(Unit) { runCatching { firstTile.requestFocus() } }
 
-    Box(modifier = Modifier.fillMaxSize().background(LauncherColors.Background)) {
-        ThemeWallpaper(path = LauncherStyle.wallpaperPath, modifier = Modifier.fillMaxSize())
-        AuroraBackground(animate = motion > 0f, glow = ambient)
-        if (!settings.liteMode) ParticleLayer(style = LauncherStyle.particles, animate = motion > 0f)
+    Box(modifier = Modifier.fillMaxSize()) {
+        // One opaque baked layer (wallpaper + scrim + aurora): see CinematicBackdrop for the measurement.
+        AmbientBackdrop(highlight = highlight, motion = motion, animate = ambientMotion)
+        if (!settings.liteMode && !isFather) ParticleLayer(style = LauncherStyle.particles, animate = ambientMotion)
 
-        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 24.dp)) {
+        // 5 % overscan-safe margins: 48 dp of 960 dp wide, 28 dp of 540 dp tall.
+        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 28.dp)) {
             HomeHeader(state = state, viewModel = viewModel, motion = motion)
 
-            // Top shelf: names the focused tile in large type over the ambient glow.
-            Column(
-                verticalArrangement = Arrangement.Bottom,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(start = 8.dp, bottom = 18.dp),
-            ) {
-                Text(
-                    text = if (preview != null) "THEME PREVIEW" else timeOfDayGreeting().uppercase(),
-                    color = ambient,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 4.sp,
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = preview?.name ?: focusedTitle ?: if (isFather) "Your TV, made simple" else "Your entertainment hub",
-                    color = LauncherColors.TextPrimary,
-                    fontSize = 50.sp,
-                    fontWeight = LauncherStyle.titleFontWeight,
-                    letterSpacing = LauncherStyle.titleLetterSpacing.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = if (preview != null) "OK applies this theme · BACK returns to Theme Studio"
-                    else focusedSubtitle ?: settings.profile.subtitle,
-                    color = LauncherColors.TextSecondary,
-                    fontSize = 19.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+            TopShelf(
+                shelf = shelf,
+                highlight = highlight,
+                preview = preview,
+                fallbackTitle = if (isFather) "Your TV, made simple" else "Your entertainment hub",
+                fallbackSubtitle = settings.profile.subtitle,
+                modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 8.dp, bottom = 18.dp),
+            )
 
             GlassDock(state = highlight, motion = motion) {
                 itemsIndexed(tiles, key = { _, t -> t.id }) { index, tile ->
                     DockTileView(
                         tile = tile,
-                        width = tileWidth,
+                        width = tileWidth * tile.widthScale,
                         motion = motion,
                         highlight = highlight,
                         onClick = if (preview != null) ({ viewModel.applyTheme(preview) }) else tile.onClick,
                         onFocused = {
-                            focusedTitle = tile.displayName
-                            focusedSubtitle = tile.subtitle
+                            shelf.title = tile.displayName
+                            shelf.subtitle = tile.subtitle
                         },
                         modifier = if (index == 0) Modifier.focusRequester(firstTile) else Modifier,
                     )
@@ -169,49 +144,120 @@ fun HomeScreen(state: LauncherUiState, viewModel: LauncherViewModel, preview: Th
     }
 }
 
+/** Text of the focused tile, written by tiles and read only by [TopShelf]. */
+private class ShelfState {
+    var title by mutableStateOf<String?>(null)
+    var subtitle by mutableStateOf<String?>(null)
+}
+
+@Composable
+private fun AmbientBackdrop(highlight: GlassHighlightState, motion: Float, animate: Boolean) {
+    // The glow colour follows the focused app; the backdrop re-bakes with it (≤ 0.5 s later).
+    CinematicBackdrop(
+        wallpaperPath = LauncherStyle.wallpaperPath,
+        animate = animate,
+        glow = highlight.accent ?: LauncherColors.Blue,
+    )
+}
+
+/** Top shelf: names the focused tile in large type over the ambient glow. */
+@Composable
+private fun TopShelf(
+    shelf: ShelfState,
+    highlight: GlassHighlightState,
+    preview: ThemeSpec?,
+    fallbackTitle: String,
+    fallbackSubtitle: String,
+    modifier: Modifier,
+) {
+    Column(verticalArrangement = Arrangement.Bottom, modifier = modifier) {
+        Text(
+            text = if (preview != null) "THEME PREVIEW" else timeOfDayGreeting().uppercase(),
+            color = highlight.accent ?: LauncherColors.Blue,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 4.sp,
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = preview?.name ?: shelf.title ?: fallbackTitle,
+            color = LauncherColors.TextPrimary,
+            fontSize = 50.sp,
+            fontWeight = LauncherStyle.titleFontWeight,
+            letterSpacing = LauncherStyle.titleLetterSpacing.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = if (preview != null) "OK applies this theme · BACK returns to Theme Studio" else shelf.subtitle ?: fallbackSubtitle,
+            color = LauncherColors.TextSecondary,
+            fontSize = 19.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
 @Composable
 private fun buildDockTiles(state: LauncherUiState, viewModel: LauncherViewModel, isFather: Boolean): List<DockTile> {
     val settings = state.settings
-    fun inputSubtitle(id: String?): String {
-        val input = state.hdmiInput(id) ?: return "Choose input in Settings"
+    fun inputSubtitle(role: String, id: String?): String {
+        val input = state.hdmiInput(id) ?: return "$role · choose input in Settings"
         val status = input.connection.takeIf { it != InputConnection.UNKNOWN }?.label
-        return listOfNotNull(input.label, status).joinToString(" · ")
+        return listOfNotNull(role, input.label, status).joinToString(" · ")
     }
-    val youtube = state.installedApp(KnownEntertainmentApp.YOUTUBE)
-    return buildList {
-        if (!isFather) {
-            add(DockTile("ps5", "PLAYSTATION 5", "PlayStation 5", inputSubtitle(settings.playStationInputId), "PS5", null, LauncherColors.Violet) {
-                viewModel.show(Screen.PlayStation)
-            })
-        }
-        add(DockTile("cable", "CABLE TV", "Cable TV", inputSubtitle(settings.cableInputId), "TV", null, Color(0xFF00B8FF), viewModel::openCable))
-        state.favouriteApps.forEach { app ->
-            add(DockTile(app.packageName, app.label.uppercase(), app.label, "Open app", "", app.packageName, LauncherColors.Surface) {
+    val airtel = DockTile(
+        id = "airtel", title = "AIRTEL DTH", displayName = "Airtel DTH",
+        subtitle = "Father's TV · Watch Live TV", glyph = "DTH", packageName = null,
+        accent = Color(0xFFE11D48), widthScale = if (isFather) 1.25f else 1f, onClick = viewModel::openCable,
+    )
+    val ps5 = DockTile(
+        id = "ps5", title = "PLAYSTATION 5", displayName = "PlayStation 5",
+        subtitle = inputSubtitle("My Gaming", settings.playStationInputId), glyph = "PS5", packageName = null,
+        accent = Color(0xFF2563EB), widthScale = 1.25f,
+    ) { viewModel.show(Screen.PlayStation) }
+
+    // YouTube, Netflix, Disney+ Hotstar are always shown; a missing one says "Not installed".
+    val knownApps = KnownEntertainmentApp.entries.map { entry ->
+        val app = state.installedApp(entry)
+        if (app != null) {
+            DockTile(entry.name, entry.title.uppercase(), app.label, "Open app", "", app.packageName, LauncherColors.Surface) {
                 viewModel.launchEntertainment(app)
-            })
+            }
+        } else {
+            DockTile(entry.name, entry.title.uppercase(), entry.title, "Not installed · OK opens Play Store", "!", null, Color(0xFF52525B)) {
+                viewModel.openNotInstalled(entry)
+            }
         }
-        if (!isFather && youtube != null) {
-            add(DockTile("tamil-cinema", "TAMIL CINEMA", "Tamil Cinema", "On YouTube", "TC", null, Color(0xFFEAB308)) {
-                viewModel.openYouTubeSearch(youtube, "Tamil cinema")
-            })
-            add(DockTile("gaming-news", "GAMING NEWS", "Gaming News", "On YouTube", "GN", null, Color(0xFF22D3EE)) {
-                viewModel.openYouTubeSearch(youtube, "gaming news")
-            })
-            add(DockTile("tech-news", "TECH NEWS", "Tech News", "On YouTube", "AI", null, Color(0xFF8B5CF6)) {
-                viewModel.openYouTubeSearch(youtube, "technology news")
-            })
+    }
+    // Apps you added to the dock from the App library (kept from v0.2).
+    val extras = state.extraFavouriteApps.map { app ->
+        DockTile(app.packageName, app.label.uppercase(), app.label, "Open app", "", app.packageName, LauncherColors.Surface) {
+            viewModel.launchEntertainment(app)
         }
-        if (!isFather) {
-            add(DockTile("apps", "APPS", "App Library", "${state.visibleApps.size} apps · hold OK to edit", "APP", null, LauncherColors.Blue) {
-                viewModel.show(Screen.Apps)
-            })
-            add(DockTile("themes", "THEME STUDIO", "Online Theme Studio", LauncherStyle.themeName, "TH", null, Color(0xFFF472B6)) {
+    }
+    val settingsTile = DockTile("settings", "SETTINGS", "Settings", "Personalise your TV", "SET", null, LauncherColors.TextSecondary) {
+        viewModel.show(Screen.Settings)
+    }
+    return if (isFather) {
+        listOf(airtel) + knownApps + extras + settingsTile
+    } else {
+        listOf(ps5) + knownApps + extras + listOf(
+            DockTile("gaming", "GAMING CENTRE", "Gaming Centre", "PS5 and gaming videos", "GC", null, Color(0xFF22D3EE)) {
+                viewModel.show(Screen.Entertainment(gaming = true))
+            },
+            DockTile("entertainment", "ENTERTAINMENT", "Entertainment Centre", "Tamil cinema · tech & AI · gaming", "EC", null, Color(0xFFEAB308)) {
+                viewModel.show(Screen.Entertainment())
+            },
+            DockTile("themes", "THEME STUDIO", "Online Theme Studio", LauncherStyle.themeName, "TH", null, Color(0xFFF472B6)) {
                 viewModel.show(Screen.ThemeStudio)
-            })
-        }
-        add(DockTile("settings", "SETTINGS", "Settings", "Personalise your TV", "SET", null, LauncherColors.TextSecondary) {
-            viewModel.show(Screen.Settings)
-        })
+            },
+            airtel,
+            DockTile("apps", "APPS", "App Library", "${state.visibleApps.size} apps · hold OK to edit", "APP", null, LauncherColors.Blue) {
+                viewModel.show(Screen.Apps)
+            },
+            settingsTile,
+        )
     }
 }
 

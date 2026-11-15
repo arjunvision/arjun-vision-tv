@@ -1,6 +1,9 @@
 package com.arjunvision.tvlauncher
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
@@ -14,6 +17,29 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: LauncherViewModel by viewModels()
 
+    /** Refreshes tiles when an app is installed, removed or updated while the launcher is open. */
+    private val packageReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            viewModel.refreshDevices()
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_CHANGED)
+            addDataScheme("package")
+        }
+        registerReceiver(packageReceiver, filter)
+    }
+
+    override fun onStop() {
+        unregisterReceiver(packageReceiver)
+        super.onStop()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -21,6 +47,9 @@ class MainActivity : ComponentActivity() {
                 LauncherRoot(viewModel)
             }
         }
+        // The theme's windowBackground avoids a white flash at launch; after the first frame it
+        // would only be one more full-screen fill per frame, so drop it.
+        window.decorView.post { window.setBackgroundDrawable(null) }
     }
 
     override fun onResume() {

@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arjunvision.tvlauncher.ui.LauncherUiState
-import com.arjunvision.tvlauncher.ui.components.AuroraBackground
+import com.arjunvision.tvlauncher.ui.components.CinematicBackdrop
 import com.arjunvision.tvlauncher.ui.components.LogoMark
 import com.arjunvision.tvlauncher.ui.components.ParticleLayer
 import com.arjunvision.tvlauncher.ui.theme.LauncherColors
@@ -67,8 +67,8 @@ fun ScreensaverScreen(state: LauncherUiState) {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(LauncherColors.Background)) {
-        AuroraBackground(animate = animate)
+    Box(modifier = Modifier.fillMaxSize()) {
+        CinematicBackdrop(wallpaperPath = null, animate = animate)
         ParticleLayer(style = LauncherStyle.particles, animate = animate)
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val blockW = 420.dp

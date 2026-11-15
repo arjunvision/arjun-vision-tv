@@ -19,7 +19,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -35,7 +40,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.arjunvision.tvlauncher.ui.theme.LauncherColors
 import com.arjunvision.tvlauncher.ui.theme.LauncherStyle
-import kotlinx.coroutines.launch
 
 /** Shared state between the dock and its tiles: which tile is focused and where it is. */
 class GlassHighlightState {
@@ -66,22 +70,31 @@ fun GlassDock(
 ) {
     val density = LocalDensity.current
     val pad = with(density) { 8.dp.toPx() }
-    val rect = remember { Animatable(Rect.Zero, Rect.VectorConverter) }
+    // Only the POSITION animates (a GPU translation of a cached layer). The glass itself is redrawn
+    // only when its size changes (moving between tiles of different widths). Redrawing seven
+    // anti-aliased outlines every spring frame cost ~50 ms per frame on the MiTV-MOOR2.
+    val position = remember { Animatable(Offset.Zero, Offset.VectorConverter) }
+    var glassSize by remember { mutableStateOf(Size.Zero) }
     var visible by remember { mutableStateOf(false) }
-    val springSpec = if (motion == 0f || LauncherStyle.lite) {
-        spring(stiffness = Spring.StiffnessHigh * 10, dampingRatio = 1f)
-    } else {
-        spring<Rect>(dampingRatio = 0.62f, stiffness = 300f)
-    }
+    val instant = motion == 0f || LauncherStyle.lite
+    val currentInstant by rememberUpdatedState(instant)
 
-    LaunchedEffect(state.target) {
-        val t = state.target ?: run { visible = false; return@LaunchedEffect }
-        val grown = Rect(t.left - pad, t.top - pad, t.right + pad, t.bottom + pad)
-        if (!visible) {
-            rect.snapTo(grown) // first focus: appear in place, then spring afterwards
-            visible = true
-        } else {
-            launch { rect.animateTo(grown, springSpec) }
+    // Observed with snapshotFlow (not read during composition), so moving focus or scrolling the
+    // dock never rebuilds the dock and its tiles.
+    LaunchedEffect(state) {
+        snapshotFlow { state.target }.collectLatest { t ->
+            if (t == null) {
+                visible = false
+                return@collectLatest
+            }
+            val grown = Rect(t.left - pad, t.top - pad, t.right + pad, t.bottom + pad)
+            glassSize = grown.size
+            if (!visible || currentInstant) {
+                position.snapTo(grown.topLeft) // first focus (or Lite Mode): appear in place
+                visible = true
+            } else {
+                position.animateTo(grown.topLeft, spring(dampingRatio = 0.62f, stiffness = 300f))
+            }
         }
     }
 
@@ -104,43 +117,36 @@ fun GlassDock(
             contentPadding = PaddingValues(horizontal = 24.dp, vertical = 18.dp),
             content = content,
         )
-        if (visible) {
-            val accent = state.accent ?: LauncherColors.Blue
+        if (visible && glassSize != Size.Zero) {
             val corner = with(density) { (LauncherStyle.cardCornerDp + 6).dp.toPx() }
-            Canvas(modifier = Modifier.matchParentSize()) {
-                val r = rect.value
-                val topLeft = r.topLeft
-                val size = Size(r.width, r.height)
-                // Soft outer glow: a few fading strokes (cheap, no blur).
-                for (i in 1..5) {
-                    val grow = i * 3f
+            val rim = with(density) { 2.5.dp.toPx() }
+            Canvas(
+                modifier = Modifier
+                    .graphicsLayer {
+                        translationX = position.value.x // read in the layer phase: no redraw, no relayout
+                        translationY = position.value.y
+                    }
+                    .size(with(density) { glassSize.width.toDp() }, with(density) { glassSize.height.toDp() }),
+            ) {
+                val accent = state.accent ?: LauncherColors.Blue
+                // Soft outer glow: two fading outlines (no blur).
+                for (i in 1..2) {
+                    val grow = i * 4f
                     drawRoundRect(
-                        color = accent.copy(alpha = 0.10f / i),
-                        topLeft = Offset(topLeft.x - grow, topLeft.y - grow),
+                        color = accent.copy(alpha = 0.16f / i),
+                        topLeft = Offset(-grow, -grow),
                         size = Size(size.width + grow * 2, size.height + grow * 2),
                         cornerRadius = CornerRadius(corner + grow),
-                        style = Stroke(width = 3f),
+                        style = Stroke(width = 4f),
                     )
                 }
                 // Glass body and top sheen.
                 drawRoundRect(
-                    brush = Brush.verticalGradient(
-                        listOf(Color.White.copy(alpha = 0.16f), Color.White.copy(alpha = 0.03f)),
-                        startY = topLeft.y,
-                        endY = topLeft.y + size.height,
-                    ),
-                    topLeft = topLeft,
-                    size = size,
+                    brush = Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.16f), Color.White.copy(alpha = 0.03f))),
                     cornerRadius = CornerRadius(corner),
                 )
                 // Rim tinted with the focused app's colour.
-                drawRoundRect(
-                    color = accent.copy(alpha = 0.95f),
-                    topLeft = topLeft,
-                    size = size,
-                    cornerRadius = CornerRadius(corner),
-                    style = Stroke(width = with(density) { 2.5.dp.toPx() }),
-                )
+                drawRoundRect(color = accent.copy(alpha = 0.95f), cornerRadius = CornerRadius(corner), style = Stroke(width = rim))
             }
         }
     }

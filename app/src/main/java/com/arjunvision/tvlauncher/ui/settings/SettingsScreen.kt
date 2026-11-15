@@ -90,14 +90,14 @@ fun SettingsScreen(state: LauncherUiState, viewModel: LauncherViewModel) {
             onSelect = { viewModel.updateSettings { it.copy(startupAnimation = !it.startupAnimation) } },
         ),
         SettingRow(
-            title = "Cable TV HDMI input",
+            title = "Airtel DTH HDMI input (Father's TV)",
             value = state.hdmiLabel(settings.cableInputId) ?: "Not set",
             onSelect = {
                 viewModel.updateSettings { it.copy(cableInputId = hdmiOptions.nextAfter(it.cableInputId)) }
             },
         ),
         SettingRow(
-            title = "PlayStation 5 HDMI input",
+            title = "PlayStation 5 HDMI input (My Gaming)",
             value = state.hdmiLabel(settings.playStationInputId) ?: "Not set",
             onSelect = {
                 viewModel.updateSettings {

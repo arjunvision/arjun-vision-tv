@@ -49,74 +49,6 @@ fun timeOfDayGreeting(now: LocalTime = LocalTime.now()): String = when (now.hour
     else -> "Good night"
 }
 
-private fun timeOfDayGlow(now: LocalTime = LocalTime.now()): Float = when (now.hour) {
-    in 7..17 -> 0.38f
-    in 18..21 -> 0.30f
-    else -> 0.22f
-}
-
-/**
- * Aurora: three soft colour fields drifting slowly. Pure gradients (no blur), so it stays smooth
- * on Android 11 TV GPUs. [animate] false (Lite Mode / animations off) draws a still frame.
- */
-@Composable
-fun AuroraBackground(modifier: Modifier = Modifier, animate: Boolean, glow: Color = LauncherColors.Blue) {
-    // Rendered into a tiny 160x90 bitmap 4 times a second, then stretched with bilinear filtering:
-    // one cheap texture blit per frame instead of three full-screen gradient fills. Full-screen
-    // gradients measured ~60 ms per frame on the MiTV-MOOR2 GPU.
-    val glowColor by rememberUpdatedState(glow)
-    val violet by rememberUpdatedState(LauncherColors.Violet)
-    val blue by rememberUpdatedState(LauncherColors.Blue)
-    val frame by produceState<ImageBitmap?>(initialValue = null, animate) {
-        val buffers = arrayOf(
-            Bitmap.createBitmap(AURORA_W, AURORA_H, Bitmap.Config.ARGB_8888),
-            Bitmap.createBitmap(AURORA_W, AURORA_H, Bitmap.Config.ARGB_8888),
-        )
-        var index = 0
-        while (true) {
-            val t = if (animate) (System.currentTimeMillis() % 24_000L) / 24_000f else 0.15f
-            val target = buffers[index]
-            index = 1 - index // double buffer: never repaint the bitmap that is on screen
-            renderAurora(target, t, glowColor.toArgb(), violet.toArgb(), blue.toArgb(), timeOfDayGlow())
-            value = target.asImageBitmap()
-            delay(if (animate) 250L else 1_000L) // still mode refreshes slowly so accent changes show
-        }
-    }
-    Canvas(modifier = modifier.fillMaxSize()) {
-        frame?.let {
-            drawImage(
-                image = it,
-                srcOffset = IntOffset.Zero,
-                srcSize = IntSize(AURORA_W, AURORA_H),
-                dstOffset = IntOffset.Zero,
-                dstSize = IntSize(size.width.toInt(), size.height.toInt()),
-                filterQuality = FilterQuality.Low,
-            )
-        }
-    }
-}
-
-private const val AURORA_W = 160
-private const val AURORA_H = 90
-private val auroraPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-private fun renderAurora(bitmap: Bitmap, t: Float, glow: Int, violet: Int, blue: Int, strength: Float) {
-    val canvas = android.graphics.Canvas(bitmap)
-    canvas.drawColor(android.graphics.Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-    val w = bitmap.width.toFloat()
-    val h = bitmap.height.toFloat()
-    val a = (t * 2 * PI).toFloat()
-    fun field(color: Int, cx: Float, cy: Float, r: Float, alpha: Float) {
-        val radius = maxOf(w, h) * r
-        val c = (color and 0x00FFFFFF) or ((alpha.coerceIn(0f, 1f) * 255).toInt() shl 24)
-        auroraPaint.shader = RadialGradient(w * cx, h * cy, radius, c, 0, Shader.TileMode.CLAMP)
-        canvas.drawCircle(w * cx, h * cy, radius, auroraPaint)
-    }
-    field(glow, 0.78f + 0.08f * cos(a), 0.18f + 0.06f * sin(a), 0.55f, strength)
-    field(violet, 0.12f + 0.06f * sin(a * 0.7f), 0.85f + 0.05f * cos(a), 0.50f, strength * 0.85f)
-    field(blue, 0.45f + 0.10f * sin(a * 1.3f), 0.55f + 0.08f * cos(a * 0.6f), 0.35f, strength * 0.35f)
-}
-
 /** A 0..1 phase that advances every [stepMs] while [running]; a fixed [still] value otherwise. */
 @Composable
 private fun rememberSteppedPhase(periodMs: Long, stepMs: Long, running: Boolean, still: Float): State<Float> =
@@ -179,34 +111,6 @@ fun ParticleLayer(style: ParticleStyle, animate: Boolean, modifier: Modifier = M
             } else {
                 drawCircle(color, radius = if (style == ParticleStyle.STARS) 2.2f else 3.5f, center = Offset(x, y))
             }
-        }
-    }
-}
-
-/**
- * Theme wallpaper with a cinematic cross-fade when the theme changes, plus a dark scrim so text
- * stays readable. Decoding happens off the main thread, sampled down to the screen width.
- */
-@Composable
-fun ThemeWallpaper(path: String?, modifier: Modifier = Modifier, maxWidth: Int = 1920) {
-    Crossfade(targetState = path, animationSpec = tween(900), label = "wallpaper", modifier = modifier) { p ->
-        if (p == null) return@Crossfade
-        val bitmap by produceState<ImageBitmap?>(initialValue = null, p) {
-            value = withContext(Dispatchers.IO) { decodeSampled(p, maxWidth) }
-        }
-        Box(modifier = Modifier.fillMaxSize()) {
-            bitmap?.let {
-                Image(bitmap = it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(LauncherColors.Background.copy(alpha = 0.92f), LauncherColors.Background.copy(alpha = 0.35f)),
-                        ),
-                    ),
-            )
         }
     }
 }

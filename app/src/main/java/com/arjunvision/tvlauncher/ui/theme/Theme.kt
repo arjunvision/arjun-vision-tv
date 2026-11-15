@@ -97,9 +97,11 @@ fun ArjunVisionTvTheme(content: @Composable () -> Unit) {
             onSurfaceVariant = LauncherColors.TextSecondary,
         ),
     ) {
+        // Transparent: every screen paints its own background once. A coloured Surface here was an
+        // extra full-screen fill on every frame (measured GPU-bound on the MiTV-MOOR2).
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = LauncherColors.Background,
+            color = androidx.compose.ui.graphics.Color.Transparent,
             contentColor = LauncherColors.TextPrimary,
             content = content,
         )

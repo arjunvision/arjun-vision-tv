@@ -3,6 +3,28 @@
 Device: MiTV-MOOR2 (`venom`), Android 11 / API 30, build 2674, 1920×1080. Tests are driven over network ADB with the remote's key codes (`input keyevent`) and checked with `uiautomator dump`, `screencap`, `logcat`, `dumpsys`.
 Marks: **PASS** = run and seen to work · **FAIL** · **NOT VERIFIED** = not run on the real TV.
 
+## Phase 3 – Home + design system, Airtel direct HDMI (2026-11-15, release build)
+| Check | Result | Evidence |
+|---|---|---|
+| AIRTEL DTH tile: one OK switches straight to the box's HDMI, no Settings | PASS | logcat: `START … passthrough/…/HW5 cmp=com.mitv.livetv` from our uid, `LiveTv_TuneManager tuneToInput … HW5` |
+| Airtel port auto-detected and saved, reused after restart | PASS | Detected HW5 = HDMI 2 (only connected non-PS5 port); Settings shows "Airtel DTH → HDMI 2" after app restart |
+| PS5 auto-mapped from its HDMI-CEC name | PASS | Settings shows "PlayStation 5 → PlayStation 5" (input HDMI100004) |
+| Airtel picture actually visible on screen | PASS (Sri, by eye) | Sri confirmed the Airtel picture appears after OK on AIRTEL DTH (TV blocks screenshots of HDMI video) |
+| Intent resolve check (must be a TV input app) | PASS | Resolves to `com.mitv.livetv`; other apps refused |
+| One-time HDMI picker when detection is unsure | NOT VERIFIED on TV | Not triggered on this TV (detection was certain); logic unit-tested (`HdmiDetectionTest`, 4/4) |
+| No false success message | PASS | No toast on switch; only failure shows manual remote steps |
+| Tile text "AIRTEL DTH / Father's TV · Watch Live TV" | PASS | uiautomator text |
+| My Mode order PS5, YouTube, Netflix, Hotstar, Gaming Centre, Entertainment, Theme Studio, Airtel, Apps, Settings | PASS | uiautomator + screenshot |
+| Father Mode: Airtel first and wider, YouTube, Netflix, Hotstar, Settings; calmer (no particles, still aurora) | PASS | screenshot |
+| Gaming Centre → Entertainment Centre with Gaming focused | PASS | screenshot |
+| "Not installed" tile state | NOT VERIFIED on TV | All three apps are installed on this TV |
+| OK debounce (double press launches once) | PASS | 1 START from our uid for a double OK on YouTube |
+| Stray OK release ignored | Code fix | One unexplained Airtel switch was seen once during a key test and did not reproduce; tiles now act only if they saw the OK press |
+| Back on Home stays in ARJUN VISION | PASS | Back on Home → still `com.arjunvision.tvlauncher` (before: dropped to Google TV home) |
+| App list refreshes on install/remove | NOT VERIFIED on TV | Receiver for PACKAGE_ADDED/REMOVED/CHANGED registered; no app was installed during the test |
+| Home D-pad frame time | IMPROVED, not 60 fps | 57 ms → 32 ms median (Lite off). atrace: GPU 45-53 → 17.6 ms per frame after baking wallpaper+scrim+aurora into one opaque layer and removing window/surface fills |
+| Unit tests | PASS | 12/12 (HdmiDetection 4, ThemeScheduler 7, WeatherExclusion 1) |
+
 ## Phase 2 – Safety + Weather proof (2026-11-15)
 | Check | Result | Evidence |
 |---|---|---|

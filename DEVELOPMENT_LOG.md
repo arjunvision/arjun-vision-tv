@@ -18,3 +18,14 @@
 - Weather: whole-project keyword search → 0 matches in app code; the only match is a description of another launcher in DESIGN_RESEARCH.md. Added `WeatherExclusionTest` (fails if any weather keyword appears in `src/main`). No location permission exists.
 - Added CLAUDE.md, DEVELOPMENT_LOG.md, TESTING_REPORT.md, NOTICE. No app code changed, so no reinstall was needed.
 - Changed files: `.gitignore`, `app/src/test/.../WeatherExclusionTest.kt`, `CLAUDE.md`, `DEVELOPMENT_LOG.md`, `TESTING_REPORT.md`, `NOTICE`, `README.md` (rollback section).
+
+## Phase 3 – Home + design system + Airtel direct HDMI (2026-11-15)
+- Tiles per v2: AIRTEL DTH (Father's TV · Watch Live TV), PLAYSTATION 5 (My Gaming), YouTube, Netflix, Disney+ Hotstar (always shown; "Not installed" opens Play Store), Gaming Centre, Entertainment Centre, Theme Studio, App library, Settings. Existing user-added dock apps kept.
+- Entertainment Centre shell screen: the three YouTube search shortcuts from v0.2 moved here (no fabricated content; live feeds wait for SOURCES.md approval in Phase 6).
+- Father Mode: Airtel first and 1.25× wide, tiles ≥ 270 dp, half zoom, still aurora, no particles.
+- **Airtel direct switching (Sri's request)**: `HdmiDetection` picks the only connected HDMI port that is not the PS5's (HW5 = HDMI 2 on this TV), saves it, reuses it; one-time picker only if unsure. PS5 auto-mapped from its CEC child "PlayStation 5". Intent must resolve to a TV input app (`com.mitv.livetv`), launched explicitly. Hidden inputs (`TvInputInfo.isHidden`) respected. No success toasts.
+- Remote: OK debounce (600 ms, shared), stray OK releases ignored, Back on Home consumed.
+- Package add/remove receiver refreshes tiles. 5 % overscan margins (48 dp × 28 dp).
+- Performance: atrace showed the Home screen GPU-bound (~6 full-screen fills per frame). New `CinematicBackdrop` bakes wallpaper + scrim + aurora into one opaque 960×540 image off the main thread; transparent theme Surface; window background dropped after first frame; glass highlight now moves as a cached layer. Frame median 57 → 32 ms; GPU 45-53 → 17.6 ms.
+- Reference: pengchujin/aerial-tv (MIT) studied read-only: CEC-child-first switching, resolve check, hidden inputs. No code copied.
+- Changed files: `domain/models/{Models,HdmiDetection}.kt`, `platform/hdmi/HdmiInputRepository.kt`, `ui/LauncherViewModel.kt`, `ui/LauncherRoot.kt`, `ui/home/{HomeScreen,SetTopBoxPicker}.kt`, `ui/entertainment/EntertainmentScreen.kt`, `ui/components/{FocusCard,GlassDock,CinematicBackdrop,AmbientLayers}.kt`, `ui/theme/Theme.kt`, `ui/settings/SettingsScreen.kt`, `ui/gaming/PlayStationScreen.kt`, `ui/themes/ThemeStudioScreen.kt`, `ui/screensaver/ScreensaverScreen.kt`, `MainActivity.kt`, tests `HdmiDetectionTest.kt`.

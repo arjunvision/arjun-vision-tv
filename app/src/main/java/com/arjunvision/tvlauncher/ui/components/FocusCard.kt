@@ -47,6 +47,19 @@ import com.arjunvision.tvlauncher.ui.theme.LauncherStyle
 /** OK held at least this long opens the tile menu (timed from key-down, reliable on IR remotes). */
 private const val HOLD_OK_MS = 550L
 
+/** Two OK presses closer than this count as one, so an app or input is never launched twice. */
+private const val OK_DEBOUNCE_MS = 600L
+
+/** Shared across all cards: a fast second press on any card is ignored, not just on the same one. */
+private object OkDebounce {
+    private var lastAt = 0L
+    fun allow(now: Long): Boolean {
+        if (now - lastAt < OK_DEBOUNCE_MS) return false
+        lastAt = now
+        return true
+    }
+}
+
 /**
  * A focusable surface for the TV remote. OK = [onClick]; holding OK or pressing MENU =
  * [onLongPress]. On focus it zooms with a spring and shows a glowing accent border, unless
@@ -102,9 +115,16 @@ fun FocusCard(
                         true
                     }
                     isOk && event.type == KeyEventType.KeyUp -> {
-                        val held = native.eventTime - (if (okDownAt > 0) okDownAt else native.downTime)
+                        // Only act if THIS card saw the press. A stray release (OK pressed in another
+                        // app or during the startup animation) must never switch inputs or open apps.
+                        if (okDownAt == 0L) return@onPreviewKeyEvent true
+                        val held = native.eventTime - okDownAt
                         okDownAt = 0L
-                        if (onLongPress != null && held >= HOLD_OK_MS) onLongPress() else onClick()
+                        if (onLongPress != null && held >= HOLD_OK_MS) {
+                            onLongPress()
+                        } else if (OkDebounce.allow(native.eventTime)) {
+                            onClick()
+                        }
                         true
                     }
                     else -> false

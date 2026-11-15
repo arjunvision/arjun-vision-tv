@@ -13,8 +13,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arjunvision.tvlauncher.ui.apps.AppsScreen
+import com.arjunvision.tvlauncher.ui.entertainment.EntertainmentScreen
 import com.arjunvision.tvlauncher.ui.gaming.PlayStationScreen
 import com.arjunvision.tvlauncher.ui.home.HomeScreen
+import com.arjunvision.tvlauncher.ui.home.SetTopBoxPicker
+import com.arjunvision.tvlauncher.domain.models.HdmiDetection
+import androidx.compose.foundation.layout.Box
 import com.arjunvision.tvlauncher.ui.profiles.ProfileScreen
 import com.arjunvision.tvlauncher.ui.screensaver.ScreensaverScreen
 import com.arjunvision.tvlauncher.ui.settings.SettingsScreen
@@ -27,6 +31,7 @@ fun LauncherRoot(viewModel: LauncherViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val themeState by viewModel.themeState.collectAsStateWithLifecycle()
     val preview by viewModel.previewTheme.collectAsStateWithLifecycle()
+    val showSetTopBoxPicker by viewModel.setTopBoxPicker.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     // Live theming: the preview (if any) or the active theme repaints every screen.
@@ -38,10 +43,12 @@ fun LauncherRoot(viewModel: LauncherViewModel) {
         viewModel.messages.collect { message -> Toast.makeText(context, message, Toast.LENGTH_LONG).show() }
     }
 
-    // Back: preview -> studio, everything else -> Home. On Home, Back does nothing (normal launcher).
-    BackHandler(enabled = state.screen != Screen.Home) { viewModel.onBack() }
+    // Back: preview -> studio, everything else -> Home. On Home, Back is consumed and does nothing,
+    // so it never drops Father Mode onto the Google TV home (this launcher is not the system Home).
+    BackHandler(enabled = true) { viewModel.onBack() }
 
     val fade = if (state.settings.liteMode) 150 else 500
+    Box {
     AnimatedContent(
         targetState = state.screen,
         transitionSpec = { fadeIn(tween(fade)) togetherWith fadeOut(tween(fade * 2 / 3)) },
@@ -55,8 +62,17 @@ fun LauncherRoot(viewModel: LauncherViewModel) {
             Screen.Settings -> SettingsScreen(state = state, viewModel = viewModel)
             Screen.PlayStation -> PlayStationScreen(state = state, viewModel = viewModel)
             Screen.ThemeStudio -> ThemeStudioScreen(state = state, viewModel = viewModel)
+            is Screen.Entertainment -> EntertainmentScreen(state = state, viewModel = viewModel, gamingFirst = screen.gaming)
             Screen.ThemePreview -> HomeScreen(state = state, viewModel = viewModel, preview = preview)
             Screen.Screensaver -> ScreensaverScreen(state = state)
         }
+    }
+    if (showSetTopBoxPicker) {
+        SetTopBoxPicker(
+            choices = HdmiDetection.setTopBoxChoices(state.hdmiInputs, state.settings.playStationInputId),
+            onPick = viewModel::chooseSetTopBox,
+            onDismiss = viewModel::dismissSetTopBoxPicker,
+        )
+    }
     }
 }

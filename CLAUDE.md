@@ -15,7 +15,9 @@ Release = R8, signed with this Mac's debug key (sideload only). `adb` is not on 
 - MiTV-MOOR2 (device `venom`), Android 11 / API 30, build 2674, 1920×1080 @ 320 dpi (960×540 dp).
 - Default HOME: `com.google.android.apps.tv.launcherx` (priority 2) + `setupwraith` (priority 1). Third-party launchers are capped at 0, so ours can't become Home without disabling them, and disabling them is forbidden (it also breaks the remote's Settings key; tested and undone).
 - Live TV / input switching: `com.mitv.livetv` accepts `TvContract.buildChannelUriForPassthroughInput(id)` (verified for PS5). No `com.xiaomi.mitv.tvplayer`.
-- HDMI: 4 CEC ports. PS5 = CEC 0x04, port 1, TvInput `com.mediatek.tvinput/.hdmi.HDMIInputService/HDMI100004`. Ports 1-3 = `.../HW4`, `HW5`, `HW6`. Airtel box has no CEC name.
+- HDMI: 4 CEC ports. PS5 = CEC 0x04, port 1, TvInput `com.mediatek.tvinput/.hdmi.HDMIInputService/HDMI100004`. Ports 1-3 = `.../HW4`, `HW5`, `HW6`. **Airtel DTH = HW5 (HDMI 2)**, connected, no CEC name (auto-detected, verified switch). HW4/HW6 are hidden inputs.
+- HDMI video can't be screenshotted (screencap returns empty), so Sri confirms the picture by eye.
+- Home is GPU-bound: keep ONE full-screen layer (`CinematicBackdrop`); never stack full-screen gradients/images.
 - Speech service: `com.google.android.katniss` RecognitionService present (use NOT VERIFIED).
 - Network ADB is not persistent (standby or reboot can drop it). Never change ADB settings; ask Sri to reconnect.
 
@@ -37,9 +39,9 @@ Rollback APK: `~/Desktop/ArjunVision-backup/arjunvision-0.2.0-vc2-installed.apk`
 | Phase | Status |
 |---|---|
 | 1 Device check + inspection + plan | Done, plan approved |
-| 2 Backup, baseline tag, Weather proof | Done, waiting for Sri's check |
-| 3 Home + design system | Next |
-| 4 Smart HDMI Hub | – |
+| 2 Backup, baseline tag, Weather proof | Done, committed |
+| 3 Home + design system + Airtel direct HDMI | Done, confirmed by Sri, committed |
+| 4 Smart HDMI Hub | Next |
 | 5 Cinematic Spotlight + motion | – |
 | 6 Entertainment Centre | – (needs SOURCES.md + image loader approval) |
 | 7 Voice Assistant | – (needs RECORD_AUDIO approval) |

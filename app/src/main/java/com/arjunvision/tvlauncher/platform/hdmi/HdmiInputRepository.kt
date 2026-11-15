@@ -3,6 +3,7 @@ package com.arjunvision.tvlauncher.platform.hdmi
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.tv.TvContract
 import android.media.tv.TvInputInfo
 import android.media.tv.TvInputManager
@@ -24,6 +25,7 @@ class HdmiInputRepository(private val context: Context) {
             ?: return emptyList()
         return manager.tvInputList
             .filter { it.type == TvInputInfo.TYPE_HDMI || (it.isPassthroughInput && it.type !in ANALOG_TYPES) }
+            .filter { info -> runCatching { !info.isHidden(context) }.getOrDefault(true) }
             .map { info ->
                 HdmiInput(
                     inputId = info.id,
@@ -31,6 +33,7 @@ class HdmiInputRepository(private val context: Context) {
                     // The physical port number is not in the public TvInputInfo API, so it is not guessed.
                     portNumber = null,
                     connection = stateOf(manager, info.id),
+                    parentId = info.parentId,
                 )
             }
     }
@@ -44,17 +47,32 @@ class HdmiInputRepository(private val context: Context) {
         }
     }.getOrDefault(InputConnection.UNKNOWN)
 
-    /** Returns true if the TV app accepted the request. False means the caller should show fallback instructions. */
+    /**
+     * Asks the TV's own input app to show [inputId]. The intent must resolve to a TV app
+     * (on this TV `com.mitv.livetv`); anything else (a file manager, say) is refused so a wrong
+     * app never opens. Returns false when nothing suitable handles it: show manual steps then.
+     * A true result means "the TV app accepted the request", not "the picture changed".
+     */
     fun openPassthroughInput(inputId: String): Boolean {
         val intent = Intent(Intent.ACTION_VIEW, TvContract.buildChannelUriForPassthroughInput(inputId))
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        @Suppress("DEPRECATION")
+        val target = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo
+            ?: return false
+        if (!isTvInputApp(target.packageName)) return false
+        intent.setClassName(target.packageName, target.name).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         return try {
             context.startActivity(intent)
             true
         } catch (e: ActivityNotFoundException) {
             false
+        } catch (e: SecurityException) {
+            false
         }
     }
+
+    private fun isTvInputApp(pkg: String): Boolean =
+        pkg == "com.mitv.livetv" || pkg == "com.android.tv" || pkg == "com.google.android.tv" ||
+            pkg.contains("livetv") || pkg.contains("tvplayer")
 
     private companion object {
         /** Analog inputs (AV, component, SCART, VGA, S-Video) are not offered for Cable/PS5. */

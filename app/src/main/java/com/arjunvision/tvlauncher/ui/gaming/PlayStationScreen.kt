@@ -99,7 +99,7 @@ fun PlayStationScreen(state: LauncherUiState, viewModel: LauncherViewModel) {
                 ) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         Text(
-                            text = if (inputLabel != null) "Open PS5 HDMI input" else "Choose PS5 input in Settings",
+                            text = "Open PS5 HDMI input",
                             color = Color.White,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
@@ -108,7 +108,7 @@ fun PlayStationScreen(state: LauncherUiState, viewModel: LauncherViewModel) {
                 }
                 Spacer(modifier = Modifier.height(14.dp))
                 Text(
-                    text = inputLabel?.let { "Input: $it" } ?: "No HDMI input selected yet",
+                    text = inputLabel?.let { "Input: $it" } ?: "Found automatically from the PS5's HDMI-CEC name",
                     color = LauncherColors.TextSecondary,
                     fontSize = 16.sp,
                 )

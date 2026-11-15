@@ -12,6 +12,7 @@ import com.arjunvision.tvlauncher.data.preferences.DataStoreSettingsRepository
 import com.arjunvision.tvlauncher.data.themes.ThemeEngine
 import com.arjunvision.tvlauncher.data.themes.ThemeRepository
 import com.arjunvision.tvlauncher.domain.models.AppSettings
+import com.arjunvision.tvlauncher.domain.models.HdmiDetection
 import com.arjunvision.tvlauncher.domain.models.HdmiInput
 import com.arjunvision.tvlauncher.domain.models.InspirationItem
 import com.arjunvision.tvlauncher.domain.models.KnownEntertainmentApp
@@ -45,6 +46,8 @@ sealed interface Screen {
     data object Settings : Screen
     data object PlayStation : Screen
     data object ThemeStudio : Screen
+    /** Entertainment Centre; [gaming] = opened from the Gaming Centre tile (focus starts on gaming). */
+    data class Entertainment(val gaming: Boolean = false) : Screen
     data object ThemePreview : Screen
     data object Screensaver : Screen
 }
@@ -74,6 +77,11 @@ data class LauncherUiState(
                 ?: KnownEntertainmentApp.entries.mapNotNull { installedApp(it)?.packageName }
             return order.mapNotNull { pkg -> apps.firstOrNull { it.packageName == pkg } }
         }
+
+    private val knownPackages: Set<String> get() = KnownEntertainmentApp.entries.flatMap { it.packages }.toSet()
+
+    /** Dock favourites other than YouTube / Netflix / Hotstar (those three are fixed tiles since v2). */
+    val extraFavouriteApps: List<LauncherApp> get() = favouriteApps.filter { it.packageName !in knownPackages }
 }
 
 /**
@@ -194,6 +202,19 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     // ---- App library ----
 
+    /** For a missing app: explain, then open its Play Store page (the Play Store is installed on this TV). */
+    fun openNotInstalled(entry: KnownEntertainmentApp) {
+        _messages.tryEmit("${entry.title} is not installed. Opening the Play Store page.")
+        val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=${entry.storePackage}"))
+            .setPackage("com.android.vending")
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try {
+            app.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            _messages.tryEmit("Install ${entry.title} from the Play Store app.")
+        }
+    }
+
     fun launchEntertainment(app: LauncherApp) {
         if (!appsRepository.launch(app)) _messages.tryEmit("${app.label} could not be opened")
     }
@@ -235,18 +256,58 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     // ---- Inputs ----
 
-    fun openCable() = openHdmi(uiState.value.settings.cableInputId, "Cable TV")
+    private val _setTopBoxPicker = MutableStateFlow(false)
+    /** True only when Airtel's HDMI port could not be detected and has never been chosen (asked once). */
+    val setTopBoxPicker: StateFlow<Boolean> = _setTopBoxPicker.asStateFlow()
 
-    fun openPlayStation() = openHdmi(uiState.value.settings.playStationInputId, "PlayStation 5")
+    /**
+     * AIRTEL DTH tile: a direct HDMI shortcut. Uses the saved input, else detects the box's port
+     * (the one connected HDMI port that isn't the PS5's) and saves it, else asks once.
+     * Stored under the v1 key `cable_input_id`, so earlier settings are kept.
+     */
+    fun openCable() {
+        val s = uiState.value
+        val inputs = s.hdmiInputs
+        val saved = s.settings.cableInputId?.takeIf { id -> inputs.isEmpty() || inputs.any { it.inputId == id } }
+        val target = saved ?: HdmiDetection.detectSetTopBox(inputs, s.settings.playStationInputId)?.inputId?.also { id ->
+            updateSettings { it.copy(cableInputId = id) }
+        }
+        if (target == null) {
+            _setTopBoxPicker.value = true
+            return
+        }
+        switchInput(target, "Airtel DTH")
+    }
 
-    private fun openHdmi(inputId: String?, deviceName: String) {
-        if (inputId == null) {
-            _messages.tryEmit("Choose the $deviceName HDMI input in Settings first")
+    /** From the one-time picker: remember the port and switch to it now. */
+    fun chooseSetTopBox(input: HdmiInput) {
+        updateSettings { it.copy(cableInputId = input.inputId) }
+        _setTopBoxPicker.value = false
+        switchInput(input.inputId, "Airtel DTH")
+    }
+
+    fun dismissSetTopBoxPicker() {
+        _setTopBoxPicker.value = false
+    }
+
+    /** PS5: saved input, else its HDMI-CEC input named "PlayStation 5" (saved), else Settings. */
+    fun openPlayStation() {
+        val s = uiState.value
+        val target = s.settings.playStationInputId
+            ?: HdmiDetection.detectPlayStation(s.hdmiInputs)?.inputId?.also { id -> updateSettings { it.copy(playStationInputId = id) } }
+        if (target == null) {
+            _messages.tryEmit("The TV does not report the PlayStation 5. Turn it on, then choose its HDMI input in Settings.")
             show(Screen.Settings)
             return
         }
+        switchInput(target, "PlayStation 5")
+    }
+
+    /** No success message: the app cannot see the picture. On failure, give the manual remote steps. */
+    private fun switchInput(inputId: String, deviceName: String) {
         if (!hdmiRepository.openPassthroughInput(inputId)) {
-            _messages.tryEmit("The TV could not switch inputs from this app. Press INPUT on the TV remote and choose $deviceName.")
+            val label = uiState.value.hdmiLabel(inputId) ?: "its HDMI input"
+            _messages.tryEmit("Could not switch automatically. Press the INPUT (source) button on the Xiaomi remote and choose $label for $deviceName.")
         }
     }
 
