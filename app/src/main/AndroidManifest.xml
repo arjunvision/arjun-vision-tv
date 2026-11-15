@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Works on TV hardware with or without a touchscreen. -->
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <!-- Network status on the dashboard (Wi-Fi vs real internet). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Online Theme Studio: HTTPS calls to licensed image APIs only. No analytics, no uploads. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+      Android 11+ package visibility. Lets the launcher see installed TV apps
+      (YouTube, Netflix, Disney+ Hotstar, ...) and the TV input passthrough intent.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="content" android:host="android.media.tv" />
+        </intent>
+        <!-- Verified package IDs for the shortcuts on the dashboard (see README). -->
+        <package android:name="com.google.android.youtube.tv" />
+        <package android:name="com.google.android.youtube" />
+        <package android:name="com.netflix.ninja" />
+        <package android:name="in.startv.hotstar" />
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:usesCleartextTraffic="false"
+        android:icon="@drawable/arjun_vision_logo"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ArjunVisionTV">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.ArjunVisionTV">
+
+            <!-- Registers the launcher as a HOME app so Android lists it under Settings > Apps > Default apps > Home. -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <!-- Also shows the launcher in the Android TV Apps row. -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
