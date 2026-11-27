@@ -19,6 +19,8 @@ enum class ParticleStyle { NONE, STARS, SNOW, SPARKS, RAIN, PETALS }
  */
 enum class ThemeCategory(val title: String, val group: ThemeGroup, val inspirationQuery: String) {
     CLASSIC("Arjun Vision Classic", ThemeGroup.FUTURISTIC, "abstract blue light"),
+    /** Deep black, metallic gold, crimson; hero artwork = Sri's own Iron Man images (personal use). */
+    IRON_MAN("Iron Man · Cinematic Dark", ThemeGroup.CINEMATIC, "red gold metallic abstract"),
     CHRISTMAS("Christmas", ThemeGroup.FESTIVAL, "christmas lights night"),
     NEW_YEAR("New Year", ThemeGroup.FESTIVAL, "fireworks night sky"),
     PONGAL("Pongal", ThemeGroup.FESTIVAL, "pongal festival"),
@@ -93,7 +95,7 @@ data class Festival(
 
 /** Saved theme-engine state (themes/state.json). */
 data class ThemeState(
-    val activeThemeId: String = "builtin-CLASSIC",
+    val activeThemeId: String = "builtin-IRON_MAN",
     val locked: Boolean = false,
     val autoEnabled: Boolean = true,
     val savedThemes: List<ThemeSpec> = emptyList(),

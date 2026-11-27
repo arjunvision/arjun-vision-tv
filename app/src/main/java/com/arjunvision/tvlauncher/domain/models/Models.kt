@@ -38,6 +38,8 @@ data class AppSettings(
     val hiddenPackages: Set<String> = emptySet(),
     /** Dock favourites in order. Null = default (YouTube, Netflix, Hotstar when installed). */
     val favourites: List<String>? = null,
+    /** Home wallpaper: null = automatic (Iron Man heroes if present), "theme" = theme photo, else a wallpaper id. */
+    val wallpaperId: String? = null,
 )
 
 /** A launchable app discovered through PackageManager. */

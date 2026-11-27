@@ -32,6 +32,8 @@
         <package android:name="com.google.android.youtube" />
         <package android:name="com.netflix.ninja" />
         <package android:name="in.startv.hotstar" />
+        <!-- Home button helper: "Open Google TV home" in Settings starts its home screen explicitly. -->
+        <package android:name="com.google.android.apps.tv.launcherx" />
     </queries>
 
     <application
@@ -60,6 +62,23 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          Arjun Vision Home button (Sri approved 27 Nov 2026). Off until Sri switches it on in
+          Settings > System > Accessibility. Window changes from Google TV home only; see HomeButtonService.
+        -->
+        <service
+            android:name=".platform.home.HomeButtonService"
+            android:exported="true"
+            android:label="@string/home_button_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/home_button_service" />
+        </service>
     </application>
 
 </manifest>

@@ -33,7 +33,7 @@ class ThemeRepository private constructor(context: Context) {
     fun allThemes(s: ThemeState = _state.value): List<ThemeSpec> = ThemeFactory.builtIns() + s.savedThemes
 
     fun activeTheme(s: ThemeState = _state.value): ThemeSpec =
-        allThemes(s).firstOrNull { it.id == s.activeThemeId } ?: ThemeFactory.builtIn(ThemeCategory.CLASSIC)
+        allThemes(s).firstOrNull { it.id == s.activeThemeId } ?: ThemeFactory.builtIn(ThemeCategory.IRON_MAN)
 
     suspend fun update(transform: (ThemeState) -> ThemeState): ThemeState = mutex.withLock {
         val next = transform(_state.value)
@@ -47,12 +47,28 @@ class ThemeRepository private constructor(context: Context) {
     }
 
     private fun load(): ThemeState = runCatching {
-        if (file.exists()) fromJson(JSONObject(file.readText())) else ThemeState()
+        if (!file.exists()) return ThemeState()
+        val json = JSONObject(file.readText())
+        val saved = fromJson(json)
+        // Migration (2026-11): older installs saved "Arjun Vision Classic" as the active theme before
+        // Iron Man existed. Move them to Iron Man once, unless Sri locked a theme on purpose.
+        if (json.optInt("version", 1) < 2) {
+            val migrated =
+                if (saved.activeThemeId == ThemeFactory.CLASSIC_ID && !saved.locked) {
+                    saved.copy(activeThemeId = ThemeFactory.IRON_MAN_ID)
+                } else {
+                    saved
+                }
+            runCatching { file.writeText(toJson(migrated).toString()) }
+            return migrated
+        }
+        saved
     }.getOrDefault(ThemeState())
 
     // ---- JSON ----
 
     private fun toJson(s: ThemeState) = JSONObject().apply {
+        put("version", 2)
         put("activeThemeId", s.activeThemeId)
         put("locked", s.locked)
         put("autoEnabled", s.autoEnabled)

@@ -37,3 +37,10 @@
 - Iron Man request: an original "Arc Reactor" theme was built, then **removed** when Sri's redesign brief rejected the reactor graphic and red fill. Saved theme falls back to Arjun Vision Classic.
 - Regression script (`regression.py`, 26 key-driven checks on the TV): 26/26 (see TESTING_REPORT).
 - Debug APK copied to `~/Desktop/ArjunVision-debug.apk`.
+
+## CINEMATIC OS follow-ups + Home button helper (2026-11-20 → 11-27, uncommitted, waiting for Sri)
+- Start-up crash fixed: `CinematicBackdrop` passed the 1-item change key to `bake()` (IndexOutOfBounds); it now always passes all four colours.
+- Start-up = Sri's own "Arjun Vision Logo Reveal" video with sound (`res/raw`, `ui/startup/StartupVideo.kt`, TextureView + MediaPlayer, any key skips, falls back to the animated logo). Replays when the launcher is opened from the Apps row (`replayStartup`), not on Back or Home.
+- Home: Airtel DTH and PlayStation 5 cards first in both modes; both switch HDMI directly (`openCable`, `openPlayStation`). Duplicate Wallpaper route/Settings row removed.
+- **Home button helper (Sri approved the plan, 27 Nov)**: `platform/home/HomeButtonService.kt` (AccessibilityService) + `res/xml/home_button_service.xml`. Only `typeWindowStateChanged` from launcherx + setupwraith, no window content, no key filter. When `launcherx/.home.HomeActivity` or `setupwraith/.RecoveryActivity` shows, it starts `MainActivity` with `FROM_HOME_BUTTON` → straight Home. Google TV stays installed/enabled, so the remote's Settings key (partnercustomizer → launcherx DashboardActivity) keeps working. Sri switched it on himself (Settings → System → Accessibility). Escape: Settings → "Open Google TV home" (helper pauses 60 s). Approach studied read-only from CleanYourTV (MIT, `examples/xiaomi-mitv-moor2`); no code copied. Test: `StockHomeTest`.
+- TV clean-up (Sri's explicit picks, `pm disable-user --user 0`, nothing uninstalled): 33 packages off (CleanYourTV MOOR2 list groups + Sri's A/B/C/E). Round 3 was undone by Sri. Undo scripts: `~/Desktop/ArjunVision-backup/undo-tv-cleanup*.sh`.

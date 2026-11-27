@@ -53,6 +53,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Sri's own Iron Man art, prepared by tools/prepare_user_art.py. Git-ignored; the app works without it.
+    sourceSets["main"].assets.srcDir("src/user-assets-build")
+
     buildFeatures {
         compose = true
         buildConfig = true

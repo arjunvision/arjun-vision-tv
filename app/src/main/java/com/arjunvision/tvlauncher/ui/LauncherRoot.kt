@@ -17,13 +17,14 @@ import com.arjunvision.tvlauncher.ui.entertainment.EntertainmentScreen
 import com.arjunvision.tvlauncher.ui.gaming.PlayStationScreen
 import com.arjunvision.tvlauncher.ui.home.HomeScreen
 import com.arjunvision.tvlauncher.ui.hdmi.HdmiHubScreen
+import com.arjunvision.tvlauncher.ui.wallpapers.WallpapersScreen
 import com.arjunvision.tvlauncher.ui.home.SetTopBoxPicker
 import com.arjunvision.tvlauncher.domain.models.HdmiDetection
 import androidx.compose.foundation.layout.Box
 import com.arjunvision.tvlauncher.ui.profiles.ProfileScreen
 import com.arjunvision.tvlauncher.ui.screensaver.ScreensaverScreen
 import com.arjunvision.tvlauncher.ui.settings.SettingsScreen
-import com.arjunvision.tvlauncher.ui.startup.StartupScreen
+import com.arjunvision.tvlauncher.ui.startup.StartupVideo
 import com.arjunvision.tvlauncher.ui.theme.LauncherStyle
 import com.arjunvision.tvlauncher.ui.themes.ThemeStudioScreen
 
@@ -57,7 +58,7 @@ fun LauncherRoot(viewModel: LauncherViewModel) {
         label = "screenTransition",
     ) { screen ->
         when (screen) {
-            Screen.Startup -> StartupScreen(motion = state.settings.animation.factor, onFinished = viewModel::goHome)
+            Screen.Startup -> StartupVideo(motion = state.settings.animation.factor, onFinished = viewModel::goHome)
             Screen.Home -> HomeScreen(state = state, viewModel = viewModel)
             Screen.Profiles -> ProfileScreen(state = state, viewModel = viewModel)
             Screen.Apps -> AppsScreen(state = state, viewModel = viewModel)
@@ -65,6 +66,7 @@ fun LauncherRoot(viewModel: LauncherViewModel) {
             Screen.PlayStation -> PlayStationScreen(state = state, viewModel = viewModel)
             Screen.ThemeStudio -> ThemeStudioScreen(state = state, viewModel = viewModel)
             Screen.HdmiHub -> HdmiHubScreen(state = state, viewModel = viewModel)
+            Screen.Wallpapers -> WallpapersScreen(state = state, viewModel = viewModel)
             is Screen.Entertainment -> EntertainmentScreen(state = state, viewModel = viewModel, gamingFirst = screen.gaming)
             Screen.ThemePreview -> HomeScreen(state = state, viewModel = viewModel, preview = preview)
             Screen.Screensaver -> ScreensaverScreen(state = state)

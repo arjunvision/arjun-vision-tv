@@ -73,6 +73,12 @@ class MainActivity : ComponentActivity() {
     /** Pressing the TV's Home button while the launcher is open (singleTask) lands here. */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        viewModel.goHome()
+        // Opened from the Apps row (launcher icon): replay the logo video. Home button (helper or HOME intent): straight Home.
+        val fromHomeButton = intent.getBooleanExtra(com.arjunvision.tvlauncher.platform.home.StockHome.EXTRA_FROM_HOME_BUTTON, false)
+        if (!fromHomeButton && (intent.hasCategory(Intent.CATEGORY_LEANBACK_LAUNCHER) || intent.hasCategory(Intent.CATEGORY_LAUNCHER))) {
+            viewModel.replayStartup()
+        } else {
+            viewModel.goHome()
+        }
     }
 }

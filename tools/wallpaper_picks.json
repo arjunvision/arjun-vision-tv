@@ -1,0 +1,178 @@
+[
+ {
+  "cid": "nature05",
+  "id": "mountain_lake",
+  "name": "Mountain Lake",
+  "category": "Nature",
+  "title": "Silver Lake Mammoth September 2016 001.jpg"
+ },
+ {
+  "cid": "nature03",
+  "id": "alpine_dawn",
+  "name": "Alpine Dawn",
+  "category": "Nature",
+  "title": "Moraine Lake Sunrise (7960461442).jpg"
+ },
+ {
+  "cid": "nature08",
+  "id": "blue_mountain_night",
+  "name": "Blue Mountain Night",
+  "category": "Nature",
+  "bias_y": 0.35,
+  "title": "Milky way above the mountains.jpg"
+ },
+ {
+  "cid": "nature10",
+  "id": "milky_way",
+  "name": "Milky Way",
+  "category": "Nature",
+  "title": "Milky Way over The Whistlers.jpg"
+ },
+ {
+  "cid": "nature14",
+  "id": "coastline",
+  "name": "Coastline",
+  "category": "Nature",
+  "title": "Face Rock at sunset, Oregon - Flickr - Bonnie Moreland (free images).jpg"
+ },
+ {
+  "cid": "nature16",
+  "id": "golden_sea",
+  "name": "Golden Sea",
+  "category": "Nature",
+  "title": "Sunset and Coastal Rock in the Irish Sea from Llanddwyn Island – July 2025.jpg"
+ },
+ {
+  "cid": "nature24",
+  "id": "aurora_sky",
+  "name": "Aurora Sky",
+  "category": "Nature",
+  "title": "Aurora borealis over Eielson Air Force Base, Alaska.jpg"
+ },
+ {
+  "cid": "nature26",
+  "id": "aurora_mountains",
+  "name": "Aurora Mountains",
+  "category": "Nature",
+  "title": "Aurora borealis above Lyngenfjorden, 2012 March.jpg"
+ },
+ {
+  "cid": "nature19",
+  "id": "forest_light",
+  "name": "Forest Light",
+  "category": "Nature",
+  "title": "Dülmen, Rorup, NSG Roruper Holz -- 2021 -- 8123.jpg"
+ },
+ {
+  "cid": "futuristic02",
+  "id": "city_night",
+  "name": "City Night",
+  "category": "Futuristic",
+  "title": "Mumbai Night City (18219784390).jpg"
+ },
+ {
+  "cid": "futuristic03",
+  "id": "harbour_lights",
+  "name": "Harbour Lights",
+  "category": "Futuristic",
+  "title": "City Lights at Night (Unsplash -uzgaA9LfNw).jpg"
+ },
+ {
+  "cid": "futuristic04",
+  "id": "skyline_blue",
+  "name": "Skyline Blue",
+  "category": "Futuristic",
+  "title": "One World Trade Center in red, white and blue lights, along the New York City skyline, U.S.A.jpg"
+ },
+ {
+  "cid": "futuristic12",
+  "id": "nebula",
+  "name": "Nebula",
+  "category": "Futuristic",
+  "title": "ESO - The Carina Nebula (by).jpg"
+ },
+ {
+  "cid": "futuristic17",
+  "id": "andromeda",
+  "name": "Andromeda",
+  "category": "Futuristic",
+  "title": "Andromeda Galaxy 560mm FL.jpg"
+ },
+ {
+  "cid": "futuristic23",
+  "id": "teal_architecture",
+  "name": "Teal Architecture",
+  "category": "Futuristic",
+  "title": "High Trestle Trail Bridge, Madrid, Iowa, United States (Unsplash F9o7u-CnDJk).jpg"
+ },
+ {
+  "cid": "gaming07",
+  "id": "tropical_sunset",
+  "name": "Tropical Sunset",
+  "category": "Gaming",
+  "title": "Silhouette of palm trees at tropical sunset on Bali island. (43539009010).jpg"
+ },
+ {
+  "cid": "gaming11",
+  "id": "palm_dusk",
+  "name": "Palm Dusk",
+  "category": "Gaming",
+  "title": "DFC 5135 Golden-hour silhouettes palm trees framing a tranquil Pattaya sunset over the Gulf of Thailand.jpg"
+ },
+ {
+  "cid": "gaming16",
+  "id": "night_drive",
+  "name": "Night Drive",
+  "category": "Gaming",
+  "title": "Car trails on dual highway (Unsplash).jpg"
+ },
+ {
+  "cid": "gaming13",
+  "id": "neon_bridge",
+  "name": "Neon Bridge",
+  "category": "Gaming",
+  "title": "Provincial Highway 1, Shueishang (Taiwan).jpg"
+ },
+ {
+  "cid": "seasonal00",
+  "id": "christmas_snow",
+  "name": "Christmas Snow",
+  "category": "Seasonal",
+  "title": "Glowing Christmas Tree Lights in the Winter Night.jpg"
+ },
+ {
+  "cid": "seasonal04",
+  "id": "diwali_diyas",
+  "name": "Diwali Diyas",
+  "category": "Seasonal",
+  "title": "Pradip (Dipavali lamps) 03.jpg"
+ },
+ {
+  "cid": "seasonal17",
+  "id": "new_year_fireworks",
+  "name": "New Year Fireworks",
+  "category": "Seasonal",
+  "title": "Anjuna Beach, Goa, India, New Year's Eve, Fireworks in the sky, Beach party.jpg"
+ },
+ {
+  "cid": "seasonal14",
+  "id": "fireworks_night",
+  "name": "Fireworks Night",
+  "category": "Seasonal",
+  "title": "Orange fireworks in the night sky 2.jpg"
+ },
+ {
+  "cid": "seasonal11",
+  "id": "pongal_kolam",
+  "name": "Pongal Kolam",
+  "category": "Seasonal",
+  "title": "Kolam Pongal 1stMain Uthandi Jan23 A7C 04891.jpg"
+ },
+ {
+  "cid": "seasonal22",
+  "id": "flower_kolam",
+  "name": "Flower Kolam",
+  "category": "Seasonal",
+  "title": "Rangoli with flowers.jpg"
+ }
+]

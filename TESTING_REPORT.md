@@ -65,3 +65,17 @@ Notes: the **Monsoon** theme and **rain particles** are calendar-based visuals (
 | Offline retry | NOT VERIFIED |
 | Cable/Airtel switch | NOT VERIFIED (input not mapped yet) |
 | Default Home takeover | FAIL by design: Settings key broke; reverted |
+
+## Home button helper + CINEMATIC OS build (2026-11-27, release APK, MiTV-MOOR2)
+| Check | Result |
+|---|---|
+| Unit tests (16 incl. `StockHomeTest`) | PASS |
+| Cold start: logo video plays, then Father Mode Home, no crash | PASS (screenshots) |
+| Home key from YouTube / Netflix / Hotstar / Settings / Live TV → Arjun Home | PASS 5/5 |
+| Remote Settings key → Google TV Settings panel (not redirected) | PASS |
+| Airtel card → Live TV, Home → Arjun | PASS (HDMI picture: Sri to confirm by eye) |
+| PS5 card → Live TV, Home → Arjun | PASS (HDMI picture: Sri to confirm by eye) |
+| Crashes/ANRs in logcat during the run | 0 |
+| Power-on / standby lands on Arjun | NOT VERIFIED (Sri to check) |
+| "Open Google TV home" escape | NOT VERIFIED (Sri to check) |
+| Real remote buttons (Home, Settings, Input, YouTube, Netflix) | NOT VERIFIED (Sri to check) |

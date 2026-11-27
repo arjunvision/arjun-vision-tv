@@ -36,6 +36,7 @@ class DataStoreSettingsRepository(private val context: Context) : SettingsReposi
         val SCREENSAVER_MINUTES = intPreferencesKey("screensaver_minutes")
         val HIDDEN = stringSetPreferencesKey("hidden_packages")
         val FAVOURITES = stringPreferencesKey("favourites")
+        val WALLPAPER = stringPreferencesKey("wallpaper_id")
     }
 
     override val settings: Flow<AppSettings> = context.launcherDataStore.data
@@ -67,6 +68,7 @@ class DataStoreSettingsRepository(private val context: Context) : SettingsReposi
         screensaverMinutes = this[Keys.SCREENSAVER_MINUTES] ?: 5,
         hiddenPackages = this[Keys.HIDDEN] ?: emptySet(),
         favourites = this[Keys.FAVOURITES]?.split(',')?.filter { it.isNotBlank() },
+        wallpaperId = this[Keys.WALLPAPER],
     )
 
     private fun MutablePreferences.writeSettings(settings: AppSettings) {
@@ -81,6 +83,7 @@ class DataStoreSettingsRepository(private val context: Context) : SettingsReposi
         this[Keys.SCREENSAVER_MINUTES] = settings.screensaverMinutes
         this[Keys.HIDDEN] = settings.hiddenPackages
         writeOptional(Keys.FAVOURITES, settings.favourites?.joinToString(","))
+        writeOptional(Keys.WALLPAPER, settings.wallpaperId)
     }
 
     private fun MutablePreferences.writeOptional(key: Preferences.Key<String>, value: String?) {

@@ -52,6 +52,8 @@ fun SettingsScreen(state: LauncherUiState, viewModel: LauncherViewModel) {
     val firstRow = remember { FocusRequester() }
     val motion = settings.animation.factor
     val hdmiOptions: List<String?> = listOf<String?>(null) + state.hdmiInputs.map { it.inputId }
+    // Read on every visit to Settings, so it updates after Sri switches it on in Accessibility.
+    val homeHelperOn = remember(state.screen) { viewModel.homeButtonHelperOn() }
 
     LaunchedEffect(Unit) {
         runCatching { firstRow.requestFocus() }
@@ -88,6 +90,15 @@ fun SettingsScreen(state: LauncherUiState, viewModel: LauncherViewModel) {
             title = "Startup animation",
             value = if (settings.startupAnimation) "On" else "Off",
             onSelect = { viewModel.updateSettings { it.copy(startupAnimation = !it.startupAnimation) } },
+        ),
+        SettingRow(
+            title = "Home wallpaper",
+            value = when (settings.wallpaperId) {
+                null -> "Automatic"
+                "theme" -> "Theme photo"
+                else -> viewModel.wallpapers.byId(settings.wallpaperId)?.name ?: "Automatic"
+            },
+            onSelect = { viewModel.show(com.arjunvision.tvlauncher.ui.Screen.Wallpapers) },
         ),
         SettingRow(
             title = "Smart HDMI Hub (Airtel DTH, PlayStation 5, test switch)",
@@ -138,9 +149,14 @@ fun SettingsScreen(state: LauncherUiState, viewModel: LauncherViewModel) {
             },
         ),
         SettingRow(
-            title = "Default home app (return to the Xiaomi launcher)",
-            value = "Open Android settings",
-            onSelect = { viewModel.openSystemHomeSettings() },
+            title = "Home button opens Arjun Vision (Accessibility helper)",
+            value = if (homeHelperOn) "On" else "Off · turn on in Accessibility",
+            onSelect = { viewModel.openAccessibilitySettings() },
+        ),
+        SettingRow(
+            title = "Open Google TV home (helper waits 1 minute)",
+            value = "Open",
+            onSelect = { viewModel.openGoogleTvHome() },
         ),
         SettingRow(title = "Company logo", value = "Arjun Vision bulb logo (built in)", enabled = false),
     )

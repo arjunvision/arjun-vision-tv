@@ -53,6 +53,7 @@ sealed interface Screen {
     data object PlayStation : Screen
     data object ThemeStudio : Screen
     data object HdmiHub : Screen
+    data object Wallpapers : Screen
     /** Entertainment Centre; [gaming] = opened from the Gaming Centre tile (focus starts on gaming). */
     data class Entertainment(val gaming: Boolean = false) : Screen
     data object ThemePreview : Screen
@@ -101,6 +102,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val settingsRepository: SettingsRepository = DataStoreSettingsRepository(application)
     private val appsRepository = InstalledAppsRepository(application)
     private val hdmiRepository = HdmiInputRepository(application)
+    val wallpapers = com.arjunvision.tvlauncher.data.wallpapers.WallpaperRepository(application)
     private val themeRepository = ThemeRepository.get(application)
     private val themeEngine = ThemeEngine(application)
 
@@ -161,6 +163,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun goHome() = show(Screen.Home)
 
+    /**
+     * Opened again from the TV's Apps row while still running in the background: play the logo
+     * video again (if the Startup animation setting is on). Returning with Back from an app does not.
+     */
+    fun replayStartup() {
+        show(if (uiState.value.settings.startupAnimation) Screen.Startup else Screen.Home)
+    }
+
     /** Back: preview returns to the studio; every other screen returns Home. */
     fun onBack(): Boolean = when (screen.value) {
         Screen.Home -> false
@@ -191,6 +201,21 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     /** Opens Android's own "Home app" chooser so the original Xiaomi launcher is always one step away. */
+    /** Home button helper status for Settings (Sri switches it on in Accessibility himself). */
+    fun homeButtonHelperOn(): Boolean = com.arjunvision.tvlauncher.platform.home.StockHome.isEnabled(app)
+
+    fun openAccessibilitySettings() {
+        runCatching { app.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            .onFailure { openSystemHomeSettings() }
+    }
+
+    /** Escape hatch: show the Google TV home screen; the helper leaves it alone for one minute. */
+    fun openGoogleTvHome() {
+        com.arjunvision.tvlauncher.platform.home.StockHome.pause(android.os.SystemClock.elapsedRealtime())
+        runCatching { app.startActivity(com.arjunvision.tvlauncher.platform.home.StockHome.googleTvHomeIntent()) }
+            .onFailure { _messages.tryEmit("Google TV home could not be opened on this TV.") }
+    }
+
     fun openSystemHomeSettings() {
         val intents = listOf(
             Intent(Settings.ACTION_HOME_SETTINGS),
@@ -308,6 +333,19 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             return
         }
         switchInput(target, "PlayStation 5")
+    }
+
+    // ---- Wallpapers ----
+
+    /** What the Home screen shows for the current profile (see WallpaperRepository.resolve). */
+    fun homeWallpaper(state: LauncherUiState, themeWallpaperPath: String?) =
+        wallpapers.resolve(state.settings.wallpaperId, state.settings.profile, themeWallpaperPath)
+
+    /** null = automatic (Iron Man heroes per profile), "theme" = theme photo, else a wallpaper id. */
+    fun setWallpaper(id: String?, label: String) {
+        updateSettings { it.copy(wallpaperId = id) }
+        _messages.tryEmit("Home wallpaper: $label")
+        goHome()
     }
 
     // ---- Smart HDMI Hub ----

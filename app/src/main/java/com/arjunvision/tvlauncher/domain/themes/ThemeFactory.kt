@@ -16,6 +16,7 @@ import java.util.Locale
 object ThemeFactory {
 
     const val CLASSIC_ID = "builtin-CLASSIC"
+    const val IRON_MAN_ID = "builtin-IRON_MAN"
 
     private data class Base(
         val background: Long,
@@ -30,6 +31,7 @@ object ThemeFactory {
     )
 
     private fun base(category: ThemeCategory): Base = when (category) {
+        ThemeCategory.IRON_MAN -> Base(0xFF070708, 0xFF141416, 0xFFE6B54A, 0xFFB3121F, 20, 0.05f, 800, 0f, ParticleStyle.NONE)
         ThemeCategory.CLASSIC -> Base(0xFF070910, 0xFF101522, 0xFF00B8FF, 0xFF8B5CF6, 24, 0.06f, 700, 0f, ParticleStyle.STARS)
         ThemeCategory.CHRISTMAS -> Base(0xFF07120D, 0xFF0F1F17, 0xFFE11D48, 0xFF22C55E, 28, 0.06f, 700, 0.5f, ParticleStyle.SNOW)
         ThemeCategory.NEW_YEAR -> Base(0xFF08080F, 0xFF14141F, 0xFFFACC15, 0xFFA78BFA, 24, 0.07f, 800, 1f, ParticleStyle.SPARKS)
