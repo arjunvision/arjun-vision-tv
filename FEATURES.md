@@ -29,6 +29,8 @@ Device: **MiTV-MOOR2**, Android 11, API 30, security patch 2026-02-01 (read via 
 | Pexels / Pixabay sources | Built, inactive | Need free API keys in `local.properties` |
 | App library: hide/restore, add to dock, reorder | Tested on TV (MENU) | MENU opened Add to dock / Hide / Close. Hold-OK uses the same menu but was not driven (adb cannot reproduce an IR hold reliably) |
 | Clock screensaver (drift every 60 s) | Tested on TV | Appeared after 2 min idle (test setting), any key returned Home. First attempt did not trigger, most likely because delayed key presses reset the idle timer; retest passed. Reset to 5 min |
+| Phase 8 screensaver: Cinematic slideshow / Home wallpaper / Dark clock, logo on/off, clock moves every minute | Tested on TV (5 min idle, slide change, 5 ms frames) |
+| Android screensaver "Arjun Vision" (DreamService) | Tested on TV; set as the TV screensaver via ADB (Google TV hides the picker) |
 | Lite Mode, card size, animation intensity, clock format | Built | Settings rows verified present |
 | Memory | Measured | Release: 77 MB PSS (debug was 122-163 MB) |
 | Cold start | Measured | Release: 0.86-0.90 s to first frame (debug: 5.4 s) |

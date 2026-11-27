@@ -11,22 +11,33 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arjunvision.tvlauncher.domain.models.AppSettings
+import com.arjunvision.tvlauncher.domain.models.ParticleStyle
+import com.arjunvision.tvlauncher.domain.models.ScreensaverStyle
 import com.arjunvision.tvlauncher.ui.LauncherUiState
+import com.arjunvision.tvlauncher.ui.LauncherViewModel
 import com.arjunvision.tvlauncher.ui.components.CinematicBackdrop
 import com.arjunvision.tvlauncher.ui.components.LogoMark
 import com.arjunvision.tvlauncher.ui.components.ParticleLayer
@@ -38,14 +49,27 @@ import java.util.Locale
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 
+/** In-launcher screensaver (after N idle minutes on Home). Same look as Android's screensaver. */
+@Composable
+fun ScreensaverScreen(state: LauncherUiState, viewModel: LauncherViewModel) {
+    val settings = state.settings
+    ScreensaverContent(
+        settings = settings,
+        slides = remember { viewModel.wallpapers.slideshow.map { it.source } },
+        homeWallpaper = viewModel.wallpapers.resolve(settings.wallpaperId, settings.profile, LauncherStyle.wallpaperPath)?.source,
+    )
+}
+
 /**
- * Ambient clock screensaver inside the launcher. Every 60 s the clock fades out, moves to a new
- * random spot and fades back in, so nothing burns into the panel. Any remote key closes it.
- * Android's own system screensaver still runs on its own schedule; this one never replaces it.
+ * ARJUN VISION ambient screensaver (CINEMATIC OS).
+ * - [ScreensaverStyle.SLIDESHOW]: Sri's Iron Man art + the licensed photos, a new one every minute.
+ * - [ScreensaverStyle.HOME_WALLPAPER]: the Home wallpaper.
+ * - [ScreensaverStyle.DARK]: dark aurora (the original look).
+ * Every minute everything fades through black and the clock moves, so nothing burns into the panel.
+ * The background is ONE baked opaque layer ([CinematicBackdrop]); the black veil is only drawn while fading.
  */
 @Composable
-fun ScreensaverScreen(state: LauncherUiState) {
-    val settings = state.settings
+fun ScreensaverContent(settings: AppSettings, slides: List<String>, homeWallpaper: String?) {
     val animate = !settings.liteMode && settings.animation.factor > 0f
     val now by produceState(initialValue = Date()) {
         while (true) {
@@ -54,43 +78,91 @@ fun ScreensaverScreen(state: LauncherUiState) {
         }
     }
     val time = remember(settings.clock24h) { SimpleDateFormat(if (settings.clock24h) "HH:mm" else "h:mm", Locale.getDefault()) }
+    val amPm = remember { SimpleDateFormat("a", Locale.getDefault()) }
     val date = remember { SimpleDateFormat("EEEE, d MMMM", Locale.getDefault()) }
-    val alpha = remember { Animatable(0f) }
-    var spot by remember { mutableStateOf(0.5f to 0.5f) }
 
-    LaunchedEffect(Unit) {
+    val veil = remember { Animatable(1f) } // 1 = black, 0 = fully visible
+    var slide by remember { mutableIntStateOf(if (slides.isEmpty()) 0 else Random.nextInt(slides.size)) }
+    var spot by remember { mutableStateOf(ScreensaverMath.nextSpot(Random)) }
+
+    LaunchedEffect(settings.screensaverStyle, slides.size) {
         while (true) {
-            alpha.animateTo(1f, tween(1200))
+            veil.animateTo(0f, tween(1_600))
             delay(60_000)
-            alpha.animateTo(0f, tween(900))
-            spot = Random.nextFloat() * 0.8f + 0.1f to Random.nextFloat() * 0.8f + 0.1f
+            veil.animateTo(1f, tween(1_000))
+            if (settings.screensaverStyle == ScreensaverStyle.SLIDESHOW) slide = ScreensaverMath.nextIndex(slide, slides.size)
+            spot = ScreensaverMath.nextSpot(Random)
         }
     }
 
+    val wallpaper = when (settings.screensaverStyle) {
+        ScreensaverStyle.SLIDESHOW -> slides.getOrNull(slide) ?: homeWallpaper
+        ScreensaverStyle.HOME_WALLPAPER -> homeWallpaper
+        ScreensaverStyle.DARK -> null
+    }
+    val textShadow = Shadow(Color.Black.copy(alpha = 0.75f), Offset(0f, 3f), blurRadius = 18f)
+
     Box(modifier = Modifier.fillMaxSize()) {
-        CinematicBackdrop(wallpaperPath = null, animate = animate)
-        ParticleLayer(style = LauncherStyle.particles, animate = animate)
+        CinematicBackdrop(
+            wallpaperPath = wallpaper,
+            animate = animate && wallpaper == null,
+            aurora = wallpaper == null,
+        )
+        if (animate) ParticleLayer(style = ParticleStyle.STARS, animate = true)
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val blockW = 420.dp
-            val blockH = 170.dp
-            val x = (maxWidth - blockW) * spot.first
-            val y = (maxHeight - blockH) * spot.second
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
+            val blockW = 520.dp
+            val blockH = 230.dp
+            Box(
                 modifier = Modifier
-                    .offset(x = x, y = y)
-                    .width(blockW)
-                    .graphicsLayer { this.alpha = alpha.value },
+                    .offset(x = (maxWidth - blockW) * spot.first, y = (maxHeight - blockH) * spot.second)
+                    .size(blockW, blockH)
+                    // Soft dark pool behind the clock so it reads on any photo (small area, cheap).
+                    .background(Brush.radialGradient(listOf(Color.Black.copy(alpha = 0.55f), Color.Transparent))),
+                contentAlignment = Alignment.Center,
             ) {
-                Text(time.format(now), color = LauncherColors.TextPrimary, fontSize = 96.sp, fontWeight = FontWeight.Thin)
-                Text(date.format(now), color = LauncherColors.TextSecondary, fontSize = 20.sp)
-                Spacer(Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    LogoMark(size = 26.dp)
-                    Spacer(Modifier.width(8.dp))
-                    Text("ARJUN VISION", color = LauncherColors.TextSecondary, fontSize = 13.sp, letterSpacing = 3.sp)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            time.format(now),
+                            style = TextStyle(color = Color.White, fontSize = 112.sp, fontWeight = FontWeight.Thin, shadow = textShadow),
+                        )
+                        if (!settings.clock24h) {
+                            Text(
+                                amPm.format(now).lowercase(Locale.getDefault()),
+                                style = TextStyle(color = LauncherColors.Blue, fontSize = 26.sp, fontWeight = FontWeight.Light, shadow = textShadow),
+                                modifier = Modifier.offset(x = 6.dp, y = (-22).dp),
+                            )
+                        }
+                    }
+                    Text(
+                        date.format(now),
+                        style = TextStyle(color = Color(0xFFE4E4E7), fontSize = 24.sp, shadow = textShadow),
+                    )
+                    if (settings.screensaverLogo) {
+                        Spacer(Modifier.height(14.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            LogoMark(size = 28.dp)
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                "ARJUN VISION",
+                                style = TextStyle(color = LauncherColors.Blue, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 4.sp, shadow = textShadow),
+                            )
+                        }
+                    }
                 }
             }
         }
+        if (veil.value > 0.01f) {
+            Box(Modifier.fillMaxSize().graphicsLayer { alpha = veil.value }.background(Color.Black))
+        }
     }
+}
+
+/** Pure helpers (unit-tested in ScreensaverMathTest). */
+object ScreensaverMath {
+    fun nextIndex(current: Int, size: Int): Int = if (size <= 0) 0 else (current + 1).mod(size)
+
+    /** Where the clock block goes (fractions of the free space), kept away from the very edges (overscan). */
+    fun nextSpot(random: Random): Pair<Float, Float> =
+        (0.06f + random.nextFloat() * 0.88f) to (0.08f + random.nextFloat() * 0.84f)
 }

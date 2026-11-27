@@ -3,4 +3,5 @@
     <string name="app_name">ARJUN VISION TV</string>
     <string name="home_button_name">Arjun Vision Home button</string>
     <string name="home_button_description">Makes the remote\'s Home button open ARJUN VISION TV instead of the Google TV home screen. It only notices when the Google TV home screen appears. It cannot read what is on screen, does not watch keys, and stores or sends nothing. Turn it off here to get the Google TV home screen back.</string>
+    <string name="dream_name">Arjun Vision</string>
 </resources>

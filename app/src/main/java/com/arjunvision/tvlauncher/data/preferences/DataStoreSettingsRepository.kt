@@ -14,6 +14,7 @@ import com.arjunvision.tvlauncher.domain.models.AnimationLevel
 import com.arjunvision.tvlauncher.domain.models.AppSettings
 import com.arjunvision.tvlauncher.domain.models.CardSize
 import com.arjunvision.tvlauncher.domain.models.Profile
+import com.arjunvision.tvlauncher.domain.models.ScreensaverStyle
 import com.arjunvision.tvlauncher.domain.repositories.SettingsRepository
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
@@ -37,6 +38,8 @@ class DataStoreSettingsRepository(private val context: Context) : SettingsReposi
         val HIDDEN = stringSetPreferencesKey("hidden_packages")
         val FAVOURITES = stringPreferencesKey("favourites")
         val WALLPAPER = stringPreferencesKey("wallpaper_id")
+        val SCREENSAVER_STYLE = stringPreferencesKey("screensaver_style")
+        val SCREENSAVER_LOGO = booleanPreferencesKey("screensaver_logo")
     }
 
     override val settings: Flow<AppSettings> = context.launcherDataStore.data
@@ -69,6 +72,8 @@ class DataStoreSettingsRepository(private val context: Context) : SettingsReposi
         hiddenPackages = this[Keys.HIDDEN] ?: emptySet(),
         favourites = this[Keys.FAVOURITES]?.split(',')?.filter { it.isNotBlank() },
         wallpaperId = this[Keys.WALLPAPER],
+        screensaverStyle = enumOrDefault(this[Keys.SCREENSAVER_STYLE], ScreensaverStyle.SLIDESHOW),
+        screensaverLogo = this[Keys.SCREENSAVER_LOGO] ?: true,
     )
 
     private fun MutablePreferences.writeSettings(settings: AppSettings) {
@@ -84,6 +89,8 @@ class DataStoreSettingsRepository(private val context: Context) : SettingsReposi
         this[Keys.HIDDEN] = settings.hiddenPackages
         writeOptional(Keys.FAVOURITES, settings.favourites?.joinToString(","))
         writeOptional(Keys.WALLPAPER, settings.wallpaperId)
+        this[Keys.SCREENSAVER_STYLE] = settings.screensaverStyle.name
+        this[Keys.SCREENSAVER_LOGO] = settings.screensaverLogo
     }
 
     private fun MutablePreferences.writeOptional(key: Preferences.Key<String>, value: String?) {

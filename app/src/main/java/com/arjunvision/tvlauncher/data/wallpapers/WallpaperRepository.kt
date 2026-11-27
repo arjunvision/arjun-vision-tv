@@ -28,6 +28,9 @@ class WallpaperRepository(private val context: Context) {
 
     val all: List<Wallpaper> get() = userArt + bundled
 
+    /** Screensaver slideshow: everything except the half-screen Home heroes (their full-screen versions are in). */
+    val slideshow: List<Wallpaper> get() = all.filterNot { it.id.startsWith("ironman_hero_") }
+
     fun byId(id: String?): Wallpaper? = id?.let { wanted -> all.firstOrNull { it.id == wanted } }
 
     /**

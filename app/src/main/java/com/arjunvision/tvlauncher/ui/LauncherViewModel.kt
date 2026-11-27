@@ -204,6 +204,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** Home button helper status for Settings (Sri switches it on in Accessibility himself). */
     fun homeButtonHelperOn(): Boolean = com.arjunvision.tvlauncher.platform.home.StockHome.isEnabled(app)
 
+    /** Android's screensaver settings, where Sri picks "Arjun Vision" himself. */
+    fun openScreensaverSettings() {
+        runCatching { app.startActivity(Intent(Settings.ACTION_DREAM_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            .onFailure { openSystemHomeSettings() }
+    }
+
     fun openAccessibilitySettings() {
         runCatching { app.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
             .onFailure { openSystemHomeSettings() }

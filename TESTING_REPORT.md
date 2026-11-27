@@ -79,3 +79,18 @@ Notes: the **Monsoon** theme and **rain particles** are calendar-based visuals (
 | Power-on / standby lands on Arjun | NOT VERIFIED (Sri to check) |
 | "Open Google TV home" escape | NOT VERIFIED (Sri to check) |
 | Real remote buttons (Home, Settings, Input, YouTube, Netflix) | NOT VERIFIED (Sri to check) |
+
+## Phase 8 screensaver (2026-11-27, release APK, MiTV-MOOR2)
+| Check | Result |
+|---|---|
+| Unit tests (19 incl. `ScreensaverMathTest`) | PASS |
+| In-launcher screensaver after 5 min idle on Home (no remote presses) | PASS (7:56, aurora photo, clock + gold am + date + logo) |
+| After 60 s: new slide, clock moved | PASS (screenshots) |
+| Frame time while showing | PASS: 1,551 frames, 0 janky, 5 ms p50/p90, GPU 7 ms |
+| Any key → Home | PASS |
+| Android screensaver "Arjun Vision" (DreamService) listed by the TV | PASS |
+| Google TV menu can select it | FAIL by design: Google TV hides the picker; set with `settings put secure screensaver_components` after Sri's explicit OK (undo: `~/Desktop/ArjunVision-backup/undo-screensaver.sh`) |
+| TV screensaver started (`Somnambulator`) → Arjun Vision dream shows Iron Man slide + clock | PASS (screenshot) |
+| Key stops the dream ("finished self") | PASS |
+| Real idle start after 10 min in an app | NOT VERIFIED (Sri to see) |
+| Crashes | 0 |

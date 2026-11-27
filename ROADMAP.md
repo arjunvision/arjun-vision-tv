@@ -10,7 +10,7 @@ Phases 1-4 of the original brief, the Online Theme Studio module, and the FUTURE
    b. Disable `com.google.android.tungsten.setupwraith` (check it doesn't own Wi-Fi first), then choose ARJUN VISION TV as Home.
    c. Accessibility helper that redirects the Home key (CleanYourTV's approach).
    Needs your explicit approval before any `pm disable-user`.
-3. **System screensaver**: a `DreamService` version of the clock so Android's own screensaver can use it.
+3. ~~**System screensaver**: a `DreamService` version of the clock so Android's own screensaver can use it.~~ Built in Phase 8 (`ArjunDreamService`).
 4. **Hold-to-move in the dock** directly on Home (today: App library → hold OK → Move left/right).
 5. **Pexels / Pixabay keys**: add free keys to `local.properties` for more inspiration variety.
 6. **Festival dates**: check Diwali, Pongal and Tamil New Year dates yearly against the Tamil Nadu government holiday list (`FestivalCalendar.kt`).

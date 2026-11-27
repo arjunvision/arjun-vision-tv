@@ -79,6 +79,24 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/home_button_service" />
         </service>
+
+        <!--
+          Arjun Vision screensaver (Phase 8). Shows in Settings > System > Screensaver; Sri picks it there.
+          Android binds it only while the screensaver runs.
+        -->
+        <service
+            android:name=".platform.screensaver.ArjunDreamService"
+            android:exported="true"
+            android:label="@string/dream_name"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.dream"
+                android:resource="@xml/dream_info" />
+        </service>
     </application>
 
 </manifest>

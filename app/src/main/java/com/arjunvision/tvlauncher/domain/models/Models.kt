@@ -40,7 +40,17 @@ data class AppSettings(
     val favourites: List<String>? = null,
     /** Home wallpaper: null = automatic (Iron Man heroes if present), "theme" = theme photo, else a wallpaper id. */
     val wallpaperId: String? = null,
+    /** Look of the screensaver (inside the launcher and Android's own screensaver). */
+    val screensaverStyle: ScreensaverStyle = ScreensaverStyle.SLIDESHOW,
+    /** Small bulb logo + "ARJUN VISION" under the screensaver clock. */
+    val screensaverLogo: Boolean = true,
 )
+
+enum class ScreensaverStyle(val label: String) {
+    SLIDESHOW("Cinematic slideshow"),
+    HOME_WALLPAPER("Home wallpaper"),
+    DARK("Dark clock"),
+}
 
 /** A launchable app discovered through PackageManager. */
 data class LauncherApp(

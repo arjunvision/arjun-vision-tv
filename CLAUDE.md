@@ -21,6 +21,7 @@ Release = R8, signed with this Mac's debug key (sideload only). `adb` is not on 
 - Home is GPU-bound: keep ONE full-screen layer (`CinematicBackdrop`); never stack full-screen gradients/images.
 - Speech service: `com.google.android.katniss` RecognitionService present (use NOT VERIFIED).
 - Home: `HomeButtonService` (accessibility, Sri turned it on 27 Nov) brings Arjun forward when Google TV home shows. Never disable launcherx/setupwraith. Never toggle accessibility via ADB; Sri does it.
+- TV screensaver = `ArjunDreamService` (set via `settings put secure screensaver_components` with Sri's OK, 27 Nov; Google TV hides the picker). Undo: `~/Desktop/ArjunVision-backup/undo-screensaver.sh`.
 - 33 bloat packages disabled with Sri's OK (undo scripts in `~/Desktop/ArjunVision-backup/`).
 - Network ADB is not persistent (standby or reboot can drop it). Never change ADB settings; ask Sri to reconnect.
 
@@ -50,6 +51,6 @@ Rollback APK: `~/Desktop/ArjunVision-backup/arjunvision-0.2.0-vc2-installed.apk`
 | 5 Cinematic Spotlight + motion | folded into R3-R4 |
 | 6 Entertainment Centre | – (needs SOURCES.md + image loader approval) |
 | 7 Voice Assistant | – (needs RECORD_AUDIO approval) |
-| 8 Ambient Screensaver + DreamService | – |
+| 8 Ambient Screensaver + DreamService | Done, confirmed by Sri, committed |
 | 9 Profiles, Settings, performance | – |
 | 10 Acceptance tests | – |

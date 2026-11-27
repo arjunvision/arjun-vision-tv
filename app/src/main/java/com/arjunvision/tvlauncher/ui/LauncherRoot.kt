@@ -69,7 +69,7 @@ fun LauncherRoot(viewModel: LauncherViewModel) {
             Screen.Wallpapers -> WallpapersScreen(state = state, viewModel = viewModel)
             is Screen.Entertainment -> EntertainmentScreen(state = state, viewModel = viewModel, gamingFirst = screen.gaming)
             Screen.ThemePreview -> HomeScreen(state = state, viewModel = viewModel, preview = preview)
-            Screen.Screensaver -> ScreensaverScreen(state = state)
+            Screen.Screensaver -> ScreensaverScreen(state = state, viewModel = viewModel)
         }
     }
     hubPicker?.let { device ->

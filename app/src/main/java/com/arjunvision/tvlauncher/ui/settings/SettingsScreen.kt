@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.arjunvision.tvlauncher.domain.models.AnimationLevel
 import com.arjunvision.tvlauncher.domain.models.CardSize
 import com.arjunvision.tvlauncher.domain.models.Profile
+import com.arjunvision.tvlauncher.domain.models.ScreensaverStyle
 import com.arjunvision.tvlauncher.ui.LauncherUiState
 import com.arjunvision.tvlauncher.ui.LauncherViewModel
 import com.arjunvision.tvlauncher.ui.components.FocusCard
@@ -142,11 +143,28 @@ fun SettingsScreen(state: LauncherUiState, viewModel: LauncherViewModel) {
             onSelect = { viewModel.updateSettings { it.copy(liteMode = !it.liteMode) } },
         ),
         SettingRow(
-            title = "Clock screensaver",
+            title = "Screensaver inside the launcher",
             value = if (settings.screensaverMinutes == 0) "Off" else "After ${settings.screensaverMinutes} min",
             onSelect = {
                 viewModel.updateSettings { it.copy(screensaverMinutes = listOf(0, 2, 5, 10).nextAfter(it.screensaverMinutes)) }
             },
+        ),
+        SettingRow(
+            title = "Screensaver style",
+            value = settings.screensaverStyle.label,
+            onSelect = {
+                viewModel.updateSettings { it.copy(screensaverStyle = ScreensaverStyle.entries.nextAfter(it.screensaverStyle)) }
+            },
+        ),
+        SettingRow(
+            title = "Screensaver logo (bulb + ARJUN VISION)",
+            value = if (settings.screensaverLogo) "On" else "Off",
+            onSelect = { viewModel.updateSettings { it.copy(screensaverLogo = !it.screensaverLogo) } },
+        ),
+        SettingRow(
+            title = "Use as the TV's screensaver (pick \"Arjun Vision\")",
+            value = "Open",
+            onSelect = { viewModel.openScreensaverSettings() },
         ),
         SettingRow(
             title = "Home button opens Arjun Vision (Accessibility helper)",

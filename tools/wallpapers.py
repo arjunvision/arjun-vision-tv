@@ -2,7 +2,8 @@
 """
 Wallpaper pipeline for ARJUN VISION TV (Wikimedia Commons official API only, no scraping).
 
-  candidates  <out_dir>          search each theme term, keep only free licences
+  candidates  <out_dir> [terms.json]
+                                 search each theme term, keep only free licences
                                  (CC0, public domain, CC BY, CC BY-SA; never NC/ND),
                                  >= 2400 px wide, landscape; save thumbnails + contact sheets
   build       <picks.json> <assets_dir>
@@ -84,10 +85,12 @@ def search(term, width):
     return out
 
 
-def candidates(out_dir):
+def candidates(out_dir, terms_json=None):
+    """[terms_json]: optional {"category": ["search term", ...]} file instead of the built-in TERMS."""
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
     all_c = {}
-    for cat, terms in TERMS.items():
+    terms_by_cat = json.loads(Path(terms_json).read_text()) if terms_json else TERMS
+    for cat, terms in terms_by_cat.items():
         items = []
         for t in terms:
             for c in search(t, 480)[:6]:

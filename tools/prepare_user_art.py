@@ -51,6 +51,9 @@ def main():
         ("hero_my", "Iron Man · Shadow", lambda: split(SRC / "iron-man-doctor-3840x2160-18335.jpg", 1300, 170, (0, 0, 3072, 2160))),
         ("showdown", "Iron Man · Showdown", lambda: fill(SRC / "iron-man-vs-doctor-3840x2160-25811.jpg")),
         ("crimson_duo", "Crimson Duo", lambda: fill(SRC / "moon-knight-x-iron-man-ma.jpg", (0.6, 0.4))),
+        # Full-screen versions of the two hero images, for the Wallpapers picker and screensaver slideshow.
+        ("vengeance_full", "Vengeance · Full screen", lambda: fill(SRC / "iron-man-divine-vengeance-hl-1920x1080.jpg")),
+        ("shadow_full", "Shadow · Full screen", lambda: fill(SRC / "iron-man-doctor-3840x2160-18335.jpg")),
     ]
     meta = []
     for key, name, make in jobs:
