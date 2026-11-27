@@ -17,18 +17,26 @@ import com.arjunvision.tvlauncher.MainActivity
  * third-party apps, and disabling Google TV home breaks the remote's Settings button (tested,
  * reverted). Google TV stays installed and enabled; only its home screen is skipped.
  *
- * Privacy: the service config limits events to two packages (launcherx, setupwraith) and one event
- * type (window state changed). It reads only the package and class name of that screen. It cannot
+ * Privacy: the service config limits events to two packages (launcherx, setupwraith) and two event
+ * types (window state changed, view focused). It reads only the package and class name. It cannot
  * read window content (canRetrieveWindowContent=false), filters no keys, and stores or sends nothing.
  * Sri switches it on himself in Settings > System > Accessibility; turning it off restores Google TV home.
+ *
+ * Focus events close a gap: when Google TV home is ALREADY in front (after an app update reconnects
+ * the helper, or after "Open Google TV home" ends), pressing Home or moving on it shows no new window,
+ * only a focus change inside Google TV home; that now brings Arjun Vision forward too.
  */
 class HomeButtonService : AccessibilityService() {
 
     private var lastRedirect = 0L
+    /** Last full screen Google TV showed (HomeActivity, the Settings dashboard...); null = not known yet. */
+    private var lastStockScreen: String? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
-        if (!StockHome.isStockHome(event.packageName?.toString(), event.className?.toString())) return
+        event ?: return
+        val decision = StockHome.decide(event.eventType, event.packageName?.toString(), event.className?.toString(), lastStockScreen)
+        lastStockScreen = decision.lastScreen
+        if (!decision.redirect) return
         val now = SystemClock.elapsedRealtime()
         if (StockHome.isPaused(now)) return
         if (now - lastRedirect < 800) return // never loop if something keeps re-showing Google TV home
@@ -62,6 +70,25 @@ object StockHome {
     fun isStockHome(packageName: String?, className: String?): Boolean {
         if (packageName != LAUNCHERX && packageName != SETUPWRAITH) return false
         return className in homeScreens
+    }
+
+    data class Decision(val redirect: Boolean, val lastScreen: String?)
+
+    /**
+     * Window change to Google TV home → redirect. Focus moving inside Google TV while its last full
+     * screen was home (or unknown, e.g. right after an update) → redirect. Focus inside another Google TV
+     * screen (the Settings dashboard from the remote's Settings key) → leave it alone.
+     */
+    fun decide(eventType: Int, packageName: String?, className: String?, lastScreen: String?): Decision {
+        if (packageName != LAUNCHERX && packageName != SETUPWRAITH) return Decision(false, lastScreen)
+        return when (eventType) {
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
+                val screen = className?.takeIf { it.startsWith(packageName) && it.endsWith("Activity") } ?: lastScreen
+                Decision(isStockHome(packageName, className), screen)
+            }
+            AccessibilityEvent.TYPE_VIEW_FOCUSED -> Decision(lastScreen == null || lastScreen in homeScreens, lastScreen)
+            else -> Decision(false, lastScreen)
+        }
     }
 
     @Volatile private var pausedUntil = 0L

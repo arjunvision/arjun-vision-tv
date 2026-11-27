@@ -94,3 +94,15 @@ Notes: the **Monsoon** theme and **rain particles** are calendar-based visuals (
 | Key stops the dream ("finished self") | PASS |
 | Real idle start after 10 min in an app | NOT VERIFIED (Sri to see) |
 | Crashes | 0 |
+
+## Home button helper: Google TV home already on screen (2026-11-27)
+| Check | Result |
+|---|---|
+| Unit tests (23 incl. 4 new `StockHomeTest` cases) | PASS |
+| Home right after an app update | PASS → Arjun |
+| Remote Settings key → dashboard; moving inside it stays there | PASS |
+| Back from the dashboard → Arjun | PASS |
+| Home from Netflix | PASS → Arjun |
+| "Open Google TV home": stays during the minute, even while moving | PASS |
+| After the minute: Google TV home returns to Arjun by itself (Google TV home moves focus) | PASS (gap closed) |
+| Crashes | 0 |
