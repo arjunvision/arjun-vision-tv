@@ -43,9 +43,9 @@ Rollback APK: `~/Desktop/ArjunVision-backup/arjunvision-0.2.0-vc2-installed.apk`
 | 1 Device check + inspection + plan | Done, plan approved |
 | 2 Backup, baseline tag, Weather proof | Done, committed |
 | 3 Home + design system + Airtel direct HDMI | Done, confirmed by Sri, committed |
-| 4 Smart HDMI Hub | Done (26/26 TV regression), waiting for Sri's check |
-| R1-R9 CINEMATIC OS redesign (Sri's brief) | Built + installed (wallpapers, Iron Man hero, cards, logo video, Airtel+PS5 first); waiting for Sri's check |
-| Home button helper (accessibility) | Built, installed, on; 5/5 Home tests; waiting for Sri's check |
+| 4 Smart HDMI Hub | Done (26/26 TV regression), committed (da6e83b) |
+| R1-R9 CINEMATIC OS redesign (Sri's brief) | Done, confirmed by Sri, committed (33afdf6) |
+| Home button helper (accessibility) | Done, confirmed by Sri, committed (33afdf6) |
 | 5 Cinematic Spotlight + motion | folded into R3-R4 |
 | 6 Entertainment Centre | – (needs SOURCES.md + image loader approval) |
 | 7 Voice Assistant | – (needs RECORD_AUDIO approval) |
