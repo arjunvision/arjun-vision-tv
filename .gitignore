@@ -8,3 +8,6 @@ local.properties
 user-assets/
 design/preview/ironman_*
 app/src/user-assets-build/
+
+# Private local notes (TV address)
+CLAUDE.local.md

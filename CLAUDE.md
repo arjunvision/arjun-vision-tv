@@ -4,10 +4,11 @@ Personal Android TV launcher for Sri's Xiaomi TV. Kotlin + Jetpack Compose, sing
 
 ## Commands
 ```bash
+export TV=<tv-ip>:5555   # real address: CLAUDE.local.md (not in git)
 ./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease
-~/Library/Android/sdk/platform-tools/adb connect 192.168.29.64:5555
-~/Library/Android/sdk/platform-tools/adb -s 192.168.29.64:5555 install -r app/build/outputs/apk/release/app-release.apk
-~/Library/Android/sdk/platform-tools/adb -s 192.168.29.64:5555 shell am start -n com.arjunvision.tvlauncher/.MainActivity
+~/Library/Android/sdk/platform-tools/adb connect $TV
+~/Library/Android/sdk/platform-tools/adb -s $TV install -r app/build/outputs/apk/release/app-release.apk
+~/Library/Android/sdk/platform-tools/adb -s $TV shell am start -n com.arjunvision.tvlauncher/.MainActivity
 ```
 Release = R8, signed with this Mac's debug key (sideload only). `adb` is not on PATH; use the full path.
 

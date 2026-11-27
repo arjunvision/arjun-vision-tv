@@ -11,7 +11,7 @@
 # Usage:  ./tools/restore-google-tv-home.sh [TV_IP:PORT]
 
 set -u
-TV="${1:-192.168.29.64:5555}"
+TV="${1:-${TV:?usage: restore-google-tv-home.sh TV_IP:5555 (or set TV)}}"
 ADB="${ADB:-$HOME/Library/Android/sdk/platform-tools/adb}"
 
 "$ADB" connect "$TV" >/dev/null

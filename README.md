@@ -16,7 +16,8 @@ Docs: [FEATURES.md](FEATURES.md) (what works, what was tested) · [ARCHITECTURE.
 ## Connect to the TV
 
 ```bash
-~/Library/Android/sdk/platform-tools/adb connect 192.168.29.64:5555
+export TV=<your-tv-ip>:5555   # from the TV: Settings > Network > your Wi-Fi
+~/Library/Android/sdk/platform-tools/adb connect $TV
 ```
 
 ```bash
@@ -32,11 +33,11 @@ cd "ArjunVisionTV" && ./gradlew :app:testDebugUnitTest :app:assembleDebug
 ```
 
 ```bash
-~/Library/Android/sdk/platform-tools/adb -s 192.168.29.64:5555 install -r app/build/outputs/apk/debug/app-debug.apk
+~/Library/Android/sdk/platform-tools/adb -s $TV install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ```bash
-~/Library/Android/sdk/platform-tools/adb -s 192.168.29.64:5555 shell am start -n com.arjunvision.tvlauncher/.MainActivity
+~/Library/Android/sdk/platform-tools/adb -s $TV shell am start -n com.arjunvision.tvlauncher/.MainActivity
 ```
 
 On the TV you can also open it from the Apps row: **ARJUN VISION TV**.
@@ -76,7 +77,7 @@ On the TV you can also open it from the Apps row: **ARJUN VISION TV**.
 - **If Google TV home ever goes missing** (for example after an experiment), run `./tools/restore-google-tv-home.sh`. It re-enables `launcherx` and `setupwraith` and sets Google TV home back. This was tested on 2026-11-15.
 - **Go back to the pre-v2 app:** install `~/Desktop/ArjunVision-backup/arjunvision-0.2.0-vc2-installed.apk`:
   ```bash
-  ~/Library/Android/sdk/platform-tools/adb -s 192.168.29.64:5555 install -r -d ~/Desktop/ArjunVision-backup/arjunvision-0.2.0-vc2-installed.apk
+  ~/Library/Android/sdk/platform-tools/adb -s $TV install -r -d ~/Desktop/ArjunVision-backup/arjunvision-0.2.0-vc2-installed.apk
   ```
 - **Go back to the pre-v2 code:** `git checkout pre-v2-baseline` (read-only look) or `git switch main`.
 - **Clear launcher defaults** (only if ARJUN VISION was ever chosen as Home): TV Settings → Apps → ARJUN VISION TV → Clear defaults. Or uninstall the app (below).
@@ -84,7 +85,7 @@ On the TV you can also open it from the Apps row: **ARJUN VISION TV**.
 ## Uninstall
 
 ```bash
-~/Library/Android/sdk/platform-tools/adb -s 192.168.29.64:5555 uninstall com.arjunvision.tvlauncher
+~/Library/Android/sdk/platform-tools/adb -s $TV uninstall com.arjunvision.tvlauncher
 ```
 
 ## Privacy
